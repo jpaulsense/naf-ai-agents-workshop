@@ -1,0 +1,12 @@
+# YouTube Video URLs for Lab 1
+# Paste one URL per line (max 5 videos)
+# Lines starting with # are ignored
+#
+# Example:
+# https://www.youtube.com/watch?v=aircAruvnKk
+# https://youtu.be/IHZwWFHWa-w
+#
+# Pick videos that are 30+ minutes on a topic you want to learn about.
+# The script will fetch the transcript and extract structured data.
+#
+# Paste your URLs below this line:
