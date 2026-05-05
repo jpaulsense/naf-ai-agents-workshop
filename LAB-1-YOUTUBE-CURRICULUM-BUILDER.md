@@ -1,151 +1,105 @@
 # Lab 1 — YouTube → Training Curriculum Builder
 
-## Overview
+## What You'll Build
 
-**Duration:** 45-60 minutes
-**Position in schedule:** Day 1, after Session 0 (What Is AI) and the break — first hands-on activity
-**Audience:** Non-technical; mixed backgrounds
-**Prerequisites:** A browser, access to Claude (claude.ai), and the facilitator's Open Brain YouTube tools running via MCP
+In this lab, you'll use AI to turn YouTube video content into a complete training curriculum — study guide, lesson sequence, and quiz included. You'll do it in about 30 minutes using a pattern that would take days to do manually.
 
-**What they'll build:** Each participant picks a topic they care about, uses AI to search and summarize YouTube videos on that topic, then uses the structured data to generate a complete training curriculum — study guide, knowledge check, and all.
+**Duration:** 30-45 minutes (self-paced)
+**What you need:** A browser with [claude.ai](https://claude.ai) or [chat.openai.com](https://chat.openai.com) open
 
-**What they'll learn:**
+## What You'll Learn
+
 - How AI search works differently from Google (semantic/meaning-based vs. keyword)
 - The difference between raw content and structured data
 - How to prompt AI to transform structured data into useful outputs
-- The real-world pattern: **fetch → structure → create**
-
----
-
-## Lab Setup
-
-### What the facilitator needs running
-
-This lab uses the Open Brain MCP tools. The facilitator (you) will be driving the tool calls from your Claude Code / Claude Desktop session with MCP connected. Participants follow along on the projector for Steps 1-3, then break out to their own Claude sessions for Step 4.
-
-**Required MCP tools:**
-- `youtube_search` — semantic search across indexed video summaries
-- `youtube_summary` — pull full structured summary for a specific video
-- `youtube_note` — save annotations (used in bonus step)
-
-**Participant requirements:**
-- A laptop or phone with a browser
-- Access to Claude (claude.ai free tier is fine) or ChatGPT
-- No accounts, API keys, or installs needed for their part
-
-### Facilitator pre-check
-
-Before the lab, verify the YouTube tools are responding:
-
-```
-Test: youtube_search query="cybersecurity basics" limit=3
-Expected: Returns 3 video results with titles and summaries
-```
-
----
-
-## Lab Flow
-
-### Step 0: Facilitator Introduction (5 min)
-
-**What to say:**
-
-> "OK, we just spent two hours learning how AI works under the hood. Now let's actually use it. We're going to build something real — a training curriculum — using AI at every step.
->
-> Here's the pattern we're going to follow. It's three steps, and it's the same pattern behind almost every useful AI application:
->
-> 1. **Fetch** — Get raw content from somewhere (in our case, YouTube videos)
-> 2. **Structure** — Use AI to extract the key concepts, facts, and takeaways into organized data
-> 3. **Create** — Use AI to transform that structured data into a finished product
->
-> By the end of this lab, each of you will have a training curriculum on a topic you actually care about — with a study guide, a lesson sequence, and a quiz. And you'll have built it in about 30 minutes using a system that would have taken days to do manually.
->
-> I'm going to drive the first two steps up here on the screen so you can see how the tools work. Then you'll break out and do Step 3 on your own laptops."
-
-**Put this on the screen:**
+- The real-world pattern: **Fetch → Structure → Create**
 
 ```
 FETCH  →  STRUCTURE  →  CREATE
-(search)   (summarize)   (build curriculum)
+(get content)  (extract key info)  (build something useful)
 ```
+
+This three-step pattern is behind almost every useful AI application. YouTube videos are today's example, but the same steps apply to any unstructured content — incident reports, regulations, meeting notes, maintenance logs.
 
 ---
 
-### Step 1: Pick a Topic & Search (10 min)
+## Step 1: Choose Your Path (2 min)
 
-**Facilitator-led, projected on screen**
+This lab gives you two options for getting source material:
 
-**What to say:**
+### Option A: Use Pre-Loaded Transcripts (recommended)
 
-> "First, we need a topic. I need a volunteer — give me something you'd want to train your team on. Could be anything: leadership, cybersecurity, drone operations, first aid, vehicle maintenance, public speaking, AI itself — whatever you're interested in."
+The `transcripts/` folder in this repository contains 9 pre-extracted video transcripts from the 3Blue1Brown "Neural Networks" series. These cover:
 
-Take a suggestion from the audience. For this guide, we'll use **"cybersecurity basics"** as the example, but use whatever the group picks.
+| File | Topic |
+|------|-------|
+| `01-aircAruvnKk.md` | What is a neural network? |
+| `02-IHZwWFHWa-w.md` | Gradient descent |
+| `03-Ilg3gGewQ5U.md` | Backpropagation |
+| `04-tIeHLnjs5U8.md` | Backpropagation calculus |
+| `05-LPZh9BOjkQs.md` | GPT (Generative Pre-trained Transformer) |
+| `06-wjZofJX0v4M.md` | Attention in transformers |
+| `07-eMlx5fFNoYc.md` | How LLMs might store facts |
+| `08-9-Jl0dxWQs8.md` | Transformers (visual intro) |
+| `09-iv-5mZ_9CPY.md` | Word embeddings |
 
-**Run the search live on screen:**
+**To use these:** Open 3-4 transcript files that interest you. You'll paste their content into Claude/ChatGPT in Step 3.
 
-```
-youtube_search query="cybersecurity basics for beginners" limit=10
-```
+### Option B: Run the Extraction Script (advanced)
 
-**What to say while results load:**
+If you have an `ANTHROPIC_API_KEY` configured (check your `.env` file), you can extract transcripts from any YouTube videos:
 
-> "What I just did is a *semantic search* — not a keyword search. I didn't search for pages that contain the exact words 'cybersecurity basics.' I searched for videos whose *meaning* is about cybersecurity basics. The AI is using those embeddings we talked about in Session 0 — it converted my query into a vector and found videos whose summary vectors are nearby in that high-dimensional space. So it might return a video titled 'How Hackers Actually Attack Networks' even though those words don't match my search — because the *meaning* matches."
+1. Edit `videos.txt` — add 1-5 YouTube URLs (one per line)
+2. Run: `python scripts/youtube_extract.py videos.txt`
+3. Find your structured output in `lab1_output/`
 
-**When results appear, talk through them:**
+This uses the YouTube Transcript API to fetch captions, then Claude AI to extract structured knowledge. It produces both JSON (discrete facts) and YAML (contextual narratives).
 
-> "OK, we got [X] results back. Let me read through the titles and descriptions. [Read through 3-5 of the most relevant ones.] These look like good candidates. Now let's pick 3-4 of the best ones and pull their full summaries. That's Step 2 — structuring."
-
-**Facilitator tip:** If the search returns too few or irrelevant results, try a broader or different query. This is a good teaching moment — "see, even AI search requires iteration. The first query isn't always the best. Let's try rephrasing."
-
----
-
-### Step 2: Pull Structured Summaries (10 min)
-
-**Facilitator-led, projected on screen**
-
-Pick 3-4 videos from the search results. For each one, pull the full summary:
-
-```
-youtube_summary video_id="[VIDEO_ID_1]"
-youtube_summary video_id="[VIDEO_ID_2]"
-youtube_summary video_id="[VIDEO_ID_3]"
-```
-
-**What to say while the first one loads:**
-
-> "Now I'm pulling the full structured summary for each video. This isn't just the title and description — the system has already watched these videos and extracted structured data: key topics, main arguments, technical concepts, takeaways. This is the AI doing that 'fetch → structure' step — taking raw unstructured video content and turning it into organized, searchable data.
->
-> This is the same concept we talked about in Session 0 with the MLP layers — the model is extracting facts and relationships from the content and encoding them as structured information."
-
-**When summaries come back, highlight the structure:**
-
-> "Look at what came back. We have:
-> - A summary of the video's main points
-> - Key topics and concepts
-> - Takeaways
-> - Technical depth rating
->
-> This is *structured data* — not a wall of text, but organized information with defined fields. That's what makes the next step possible. You can't easily build a curriculum from a 20-minute video transcript. But you *can* build one from a clean summary with extracted topics and takeaways."
-
-**Compile the summaries** — copy all 3-4 summaries into a single text block. This becomes the input for Step 3.
+> **Note:** Option B requires an API key and takes 2-3 minutes to run. If you're unsure, start with Option A — you can always try Option B later.
 
 ---
 
-### Step 3: Build the Curriculum (15-20 min)
+## Step 2: Understand the Structure (5 min)
 
-**Participant-led — everyone on their own laptops**
+Before you build your curriculum, take a moment to understand *why* structured data matters.
 
-This is where participants break out. They'll paste the compiled summaries into their own Claude or ChatGPT session and use a prompt to generate the curriculum.
+Open one of the transcript files (e.g., `transcripts/01-aircAruvnKk.md`). Scroll through it. Notice:
+- It's a wall of timestamped text
+- Finding specific facts requires reading the whole thing
+- There's no organization — topics blend together
 
-**Put this on the screen and have them copy it:**
+Now imagine trying to build a training curriculum from 4 of these raw transcripts. You'd have to:
+1. Read all of them end to end
+2. Mentally extract the key concepts
+3. Figure out how they relate to each other
+4. Organize them into a logical sequence
+5. Write up summaries, definitions, and quiz questions
+
+That's hours of work. Instead, you're going to hand this to AI and let it do steps 1-4 in seconds. Your job is step 5: reviewing, correcting, and approving the output.
+
+**This is the core insight:** AI is a *tool*, not a replacement. It does 90% of the work in 30 seconds, but you still need a human to review, correct, and approve. The value is in the speed — not in blind trust.
 
 ---
 
-#### Prompt Template (display on screen for participants to copy)
+## Step 3: Build Your Curriculum (15-20 min)
+
+This is the main event. You'll paste transcript content into Claude or ChatGPT along with a structured prompt, and it will generate a complete curriculum package.
+
+### 3.1 — Gather your source material
+
+Pick 3-4 transcripts from the `transcripts/` folder (or use your `lab1_output/` files from Option B). Copy the full content of each.
+
+### 3.2 — Open your AI tool
+
+Go to [claude.ai](https://claude.ai) or [chat.openai.com](https://chat.openai.com) in your browser.
+
+### 3.3 — Paste this prompt
+
+Copy the entire block below into your AI chat. Replace `[TOPIC]` with your actual topic (e.g., "neural networks and deep learning"). Then paste your transcript content where indicated at the bottom.
 
 ```
-I have structured summaries from several YouTube videos on [TOPIC].
-Using ONLY the content from these summaries, create a training
+I have transcripts from several YouTube videos on [TOPIC].
+Using ONLY the content from these transcripts, create a training
 curriculum package:
 
 ## 1. CURRICULUM OUTLINE
@@ -168,163 +122,132 @@ curriculum package:
 - Range from basic recall to applied scenarios
 
 ## 4. SOURCES
-- List each video used: title, channel, and video ID
+- List each video used: title and video ID
 - Note which curriculum modules each video contributed to
 
 Format everything in clean markdown with clear headers.
 
 ---
 
-VIDEO SUMMARIES:
+VIDEO TRANSCRIPTS:
 
-[PASTE THE COMPILED SUMMARIES HERE]
+[PASTE YOUR TRANSCRIPTS HERE]
 ```
 
----
+### 3.4 — Review the output
 
-**What to say when handing off:**
+Once the AI generates your curriculum, read through it critically:
 
-> "OK, here's where you take over. On the screen is a prompt template. You're going to:
->
-> 1. Open Claude or ChatGPT on your laptop — free accounts work fine
-> 2. Copy this prompt
-> 3. Replace [TOPIC] with the topic we searched for
-> 4. Paste the video summaries where it says [PASTE HERE] — I'm going to send those to you now [share via chat, email, or just leave them on screen to copy]
-> 5. Hit enter and watch it build your curriculum
->
-> You'll get back a full curriculum outline, a study guide, and a 10-question quiz — all generated from real video content. Take about 10-15 minutes. Read through what it produces. Does it make sense? Did it get anything wrong? Would you actually use this to train someone?
->
-> When you're done, we'll regroup and compare notes."
+- **Accuracy:** Did it get the facts right? Are definitions correct?
+- **Completeness:** Did it miss any major concepts from the videos?
+- **Sequence:** Does the module order make sense? Would a learner follow this progression?
+- **Quiz quality:** Do the questions test real understanding, or just surface-level recall?
+- **Hallucinations:** Did it add information that *wasn't* in the transcripts?
 
-**Facilitator:** While participants work, walk the room. Help anyone who's stuck. Look for interesting outputs to highlight in the debrief.
+Mark anything that looks wrong or suspicious. This is the "human in the loop" step.
 
 ---
 
-### Step 4: Debrief & Discuss (10 min)
+## Step 4: Iterate and Improve (5-10 min)
 
-**Facilitator-led, full group**
+Your first output probably isn't perfect. Here are some follow-up prompts to try:
 
-Bring the group back together. Ask 2-3 participants to share highlights.
+**If the output is too generic:**
+> "Be more specific — use exact terminology, examples, and details from the video transcripts. Don't add information that isn't in the sources."
 
-**Discussion questions:**
+**If the study guide is too short:**
+> "Expand the study guide to include at least 15 key terms and 10 core concepts. Pull directly from the transcript content."
 
-1. **"Did the AI get anything wrong?"**
-   > This is the most important question. AI makes mistakes — it can misinterpret a video's point, invent details that weren't in the summary, or sequence topics in a way that doesn't make sense. Talk about what they caught.
-   >
-   > "This is why we say AI is a *tool*, not a replacement. It did 90% of the work in 30 seconds, but you still need a human to review, correct, and approve. The value is in the speed — not in blind trust."
+**If you suspect hallucinated content:**
+> "Review your output against the source transcripts. Flag any claims that aren't directly supported by the video content, and remove them."
 
-2. **"Would you actually use this output?"**
-   > Get honest reactions. Some will say yes, some will say it needs work. Both are valid.
-   >
-   > "If the answer is 'it's 80% there and I'd need 20 minutes to clean it up' — that's a win. Without AI, building a curriculum from scratch takes hours or days. Even imperfect AI output is a massive accelerator."
+**If you want a different format:**
+> "Reformat the curriculum as a 1-week training plan with daily objectives, reading assignments (video segments), and daily quizzes of 3 questions each."
 
-3. **"What else could you build with this same pattern?"**
-   > Push them to generalize the fetch → structure → create pattern:
-   > - Fetch incident reports → structure into categories → create a trend analysis
-   > - Fetch regulations → structure into requirements → create a compliance checklist
-   > - Fetch meeting notes → structure into decisions and action items → create a status report
-   > - Fetch maintenance logs → structure by system → create a readiness summary
-   >
-   > "The *pattern* is what matters. YouTube videos are just today's example. The same three steps apply to any unstructured content."
-
-4. **"How does this connect to what we learned in Session 0?"**
-   > Tie it back to the technical concepts:
-   > - The **semantic search** used embeddings and dot products — the same vector math we covered
-   > - The **summary extraction** used attention (understanding context) and MLPs (extracting facts)
-   > - The **curriculum generation** used next-token prediction — the model predicted the most likely curriculum structure word by word
-   > - The entire pipeline is running on the same architecture: tokens → embeddings → attention → MLPs → prediction
-   >
-   > "Everything you used in this lab is powered by the nine concepts from this morning. Neurons, layers, weights, gradient descent, embeddings, attention, MLPs — all of it, working together."
+**If you want to go deeper on one module:**
+> "Expand Module [X] into a detailed 30-minute lesson plan with: an opening hook, 3 teaching points with examples, a practice activity, and a summary."
 
 ---
 
-### Bonus Step (if time allows): Save & Annotate
+## Step 5: Reflect (5 min)
 
-If you have 5 extra minutes, demonstrate the "memory" capability:
+Before you move on, think about these questions:
 
+1. **Would you actually use this output?** If it's 80% there and needs 20 minutes of cleanup — that's a win. Without AI, building a curriculum from scratch takes hours or days.
+
+2. **What did the AI get wrong?** Every AI makes mistakes — misinterpreting a video's point, inventing details, or sequencing topics oddly. What did you catch?
+
+3. **What else could you build with this same pattern?** The fetch → structure → create pattern applies to any unstructured content:
+   - Fetch incident reports → structure into categories → create a trend analysis
+   - Fetch regulations → structure into requirements → create a compliance checklist
+   - Fetch meeting notes → structure into decisions/action items → create a status report
+   - Fetch maintenance logs → structure by system → create a readiness summary
+
+4. **How does this connect to what you learned in Session 0?** Everything that happened in this lab uses the same architecture from the morning session:
+   - The transcript extraction uses tokenization (breaking text into chunks)
+   - The AI's ability to understand context uses attention (weighing which words relate to which)
+   - The curriculum generation uses next-token prediction (the model predicts the most useful next word, one at a time)
+
+---
+
+## Bonus: Run the Structured Extraction Script
+
+If you finished early and want to see how the automated pipeline works, try running the full extraction script:
+
+```bash
+# Edit videos.txt with YouTube URLs you're interested in
+# (one URL per line, max 5 videos)
+
+python scripts/youtube_extract.py videos.txt
 ```
-youtube_note video_id="[BEST_VIDEO_ID]" note="Used in cybersecurity basics curriculum lab — best video for explaining phishing attacks to non-technical audience"
-```
 
-**What to say:**
+This script:
+1. Fetches transcripts via the YouTube Transcript API
+2. Sends each transcript to Claude AI for structured extraction
+3. Produces two complementary knowledge formats:
+   - **JSON** — discrete facts, terminology, statistics (good for search, quizzes)
+   - **YAML** — narrative knowledge, arguments, connections (good for AI agents, conversations)
+4. Combines everything into a knowledge base with a human-readable summary
 
-> "One more thing. The system I used to search and summarize those videos also has memory. I can annotate a video — save a note about *why* it was useful and *how* I used it. Next time someone asks me for cybersecurity training content, the system remembers that this video was good for non-technical audiences. It learns from use.
->
-> This is the difference between a tool and a *system*. A tool does one thing. A system learns and improves over time. That 'note' I just saved? It's stored as an embedding — the same vector representation we talked about this morning — and it'll influence future searches and recommendations."
-
----
-
-## Facilitator Cheat Sheet
-
-### If youtube_search returns no results or poor results
-
-Try these alternative queries:
-- Broaden the topic: "network security" instead of "cybersecurity for beginners"
-- Use different framing: "how hackers work" instead of "cybersecurity"
-- Try a different topic entirely — have a backup topic ready
-
-### If a participant's Claude session gives a weak curriculum
-
-Common issues and fixes:
-- **Too generic:** Tell them to add to the prompt: "Be specific — use exact terminology, examples, and details from the video summaries. Don't add information that isn't in the sources."
-- **Too short:** Add: "Make the study guide comprehensive — at least 15 key terms and 10 core concepts."
-- **Hallucinated content:** Add: "Only include information explicitly stated in the video summaries. If you're unsure whether something was covered, leave it out and note the gap."
-
-### Backup plan: pre-loaded summaries
-
-If the MCP tools are down or unresponsive, have 3-4 pre-pulled video summaries saved as a text file. Distribute them manually and skip straight to Step 3. The learning is in the prompting and output evaluation, not in watching the API calls.
-
-### Timing guide
-
-| Step | Activity | Duration | Running total |
-|------|----------|----------|---------------|
-| 0 | Intro & pattern explanation | 5 min | 0:05 |
-| 1 | Topic selection & search | 10 min | 0:15 |
-| 2 | Pull & review summaries | 10 min | 0:25 |
-| 3 | Participants build curriculum | 15-20 min | 0:40-0:45 |
-| 4 | Debrief & discussion | 10 min | 0:50-0:55 |
-| Bonus | Save & annotate demo | 5 min | 0:55-1:00 |
+Look at the output in `lab1_output/` and compare the JSON vs YAML formats. Notice how the same video content gets represented differently depending on the use case.
 
 ---
 
-## What This Lab Sets Up
+## Troubleshooting
 
-This lab establishes the **fetch → structure → create** pattern that recurs throughout the rest of the workshop:
+**"I don't have access to Claude or ChatGPT"**
+- Claude free tier: [claude.ai](https://claude.ai) — sign up with Google or email
+- ChatGPT free tier: [chat.openai.com](https://chat.openai.com) — sign up with Google or email
+- Both work for this lab. Use whichever you can access.
 
-| This lab | Agent workshop equivalent |
-|----------|--------------------------|
-| `youtube_search` | An agent querying a database or API |
-| `youtube_summary` | An agent extracting structured data from a source |
-| Claude prompt → curriculum | An agent using an LLM node to reason and generate |
-| Human reviews output | Human-in-the-loop approval (Notebook 111) |
+**"The output is too short / not detailed enough"**
+- Make sure you pasted enough transcript content. 3-4 full transcripts gives the AI more to work with.
+- Add to your prompt: "Be comprehensive and detailed. Use specific examples from the transcripts."
 
-When you transition to the LangGraph workshop after this lab, you can reference back:
+**"The AI seems to be making things up"**
+- Add to your prompt: "Only include information explicitly stated in the transcripts. If you're unsure whether something was covered, leave it out and note the gap."
+- This is called "hallucination" — it's a known limitation. Your job as the human is to catch it.
 
-> "Remember the curriculum builder? You did fetch → structure → create manually — you ran each step yourself. In the agent workshop, we're going to teach the AI to run that loop *on its own* — deciding which tool to use, when to use it, and when it's done. That's what makes it an agent."
+**"The youtube_extract.py script isn't working"**
+- Check that your `.env` file has `ANTHROPIC_API_KEY` set
+- Make sure you've run `uv sync` to install dependencies
+- Try with just 1 video URL first to isolate the issue
+
+**"I'm stuck or confused"**
+- Raise your hand — the proctor is here to help
+- Pair up with someone nearby and work through it together
 
 ---
 
-## Sample Output (for facilitator reference)
+## What's Next
 
-Below is an example of what a good curriculum output looks like, so you know what to expect and can coach participants toward it:
+This lab established the **fetch → structure → create** pattern. In the LangGraph notebooks that follow, you'll learn to build AI agents that run this same loop *autonomously* — deciding which tool to use, when to use it, and when the task is done.
 
-### Example: Cybersecurity Basics Curriculum
+| This lab (manual) | Agent equivalent (automated) |
+|-------------------|------------------------------|
+| You copy transcripts | An agent fetches from an API |
+| You paste into Claude | An agent calls an LLM node |
+| You review the output | Human-in-the-loop approval |
+| You iterate with follow-ups | An agent loops until quality threshold is met |
 
-**Module 1: What Is Cybersecurity? (Foundational)**
-- Learning objective: Understand what cybersecurity is, why it matters, and the basic threat landscape
-- Topics: Definition of cybersecurity, types of threats (malware, phishing, ransomware), the CIA triad (confidentiality, integrity, availability), who attackers are and what motivates them
-- Source videos: Video 1, Video 3
-
-**Module 2: How Attacks Actually Work (Intermediate)**
-- Learning objective: Understand the mechanics of common attack types
-- Topics: Phishing anatomy (email → click → payload), social engineering techniques, network-based attacks (man-in-the-middle, DNS spoofing), the attack kill chain
-- Source videos: Video 2, Video 4
-
-**Module 3: Defending Yourself and Your Organization (Applied)**
-- Learning objective: Apply practical security measures in daily work
-- Topics: Password hygiene and MFA, recognizing phishing attempts, safe browsing habits, reporting procedures, physical security basics
-- Source videos: Video 1, Video 3, Video 4
-
-**Study Guide:** [15-20 key terms with definitions, 8-10 core concepts, 3-5 common misconceptions]
-
-**Knowledge Check:** [10 questions mixing recall ("What does CIA stand for in cybersecurity?") with application ("Your colleague receives an email from IT asking them to click a link to reset their password. The email came from it-support@company-secure.net instead of the usual @company.com. What should they do?")]
+The difference between a tool and an agent: a tool does one thing when you ask. An agent decides *what* to do, *when* to do it, and *whether it's done* — on its own.

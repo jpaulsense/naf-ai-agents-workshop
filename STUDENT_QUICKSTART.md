@@ -22,10 +22,11 @@ That's it. **No software to install.** Everything runs in your browser.
 
 ## Day 1 — Lab 1: YouTube Curriculum Builder
 
-For this lab, you only need your Claude AI (or ChatGPT) account open in a browser tab. The facilitator will provide you with content to paste in. Follow along with the instructions on screen.
+This is a self-paced lab. Open `LAB-1-YOUTUBE-CURRICULUM-BUILDER.md` and follow the steps at your own pace.
 
 **What you'll need open:**
 - One browser tab with [claude.ai](https://claude.ai) (or [chat.openai.com](https://chat.openai.com))
+- The `transcripts/` folder in this repository (your source material)
 - That's it
 
 ---
