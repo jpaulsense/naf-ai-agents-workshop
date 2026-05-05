@@ -48,18 +48,10 @@
 
 **Speaker notes:**
 
-- Start with the "wow" factor — this technology generates images and videos from text descriptions
-  - Images that never existed, scenes that were never photographed
-  - Not retrieving from a database — creating entirely new visual content
-- The underlying process is called **diffusion**
-  - Connected to real physics — Brownian motion
-  - Einstein's 1905 paper described how pollen grains jitter randomly in water
-  - Diffusion models essentially run this process in reverse
-- Three key components we'll cover:
-  - CLIP — bridges the gap between text and images
-  - Diffusion — the noise-removal engine
-  - Guidance — how text steers the generation
-- Same geometric and mathematical intuitions from earlier sessions apply here
+- Generates images/videos from text — not retrieving from a database, creating entirely new content
+- Core process = diffusion, connected to real physics (Brownian motion, Einstein 1905) run in reverse
+- Three components: CLIP (bridges text and images), Diffusion (noise-removal engine), Guidance (text steers generation)
+- Same geometric/mathematical intuitions from earlier sessions apply here
 
 ---
 
@@ -78,18 +70,10 @@
 
 **Speaker notes:**
 
-- WAN 2.1 is a real, open-source model — not behind a paywall
-  - Anyone with a powerful enough GPU can download and run it
-  - Makes the technology tangible and inspectable
-- The demo shows the generation process in real time
-  - Starts from complete random noise — pure static
-  - Each pass through the transformer removes some noise
-  - Gradually: shapes emerge → objects form → details sharpen → final video
-- Key observation: the model isn't "drawing" the image from a blank canvas
-  - It's "revealing" an image that's hidden inside random noise
-  - Like a sculptor removing marble to reveal the statue inside
-- The transformer architecture from our earlier sessions is doing the heavy lifting
-  - Same attention + MLP structure, adapted for images/video instead of text
+- WAN 2.1: open-source, anyone with a GPU can download and run it
+- Demo shows generation in real time: pure static → shapes emerge → objects form → details sharpen → final video
+- Not "drawing" from blank canvas — "revealing" an image hidden in noise (sculptor removing marble)
+- Same transformer architecture (attention + MLP) from earlier sessions, adapted for images/video
 
 ---
 
@@ -114,16 +98,9 @@
 
 **Speaker notes:**
 
-- Three components, each doing a distinct job
-  - CLIP = the translator between text and images
-  - Diffusion = the image-generation engine
-  - Guidance = the steering wheel that makes the engine follow your prompt
-- We'll cover each one in order
-  - CLIP first — it's the foundation that makes text-to-image possible
-  - Then Diffusion — how noise removal creates images
-  - Then Guidance — how your prompt actually controls the output
-- Each component was a separate research breakthrough
-  - The magic is in how they fit together
+- CLIP = translator between text and images; Diffusion = generation engine; Guidance = steering wheel
+- Covering in order: CLIP first (foundation), then Diffusion (noise removal), then Guidance (prompt control)
+- Each was a separate research breakthrough — the magic is how they fit together
 
 ---
 
@@ -151,25 +128,11 @@ After training, you can compare ANY text to ANY image by measuring the angle bet
 
 **Speaker notes:**
 
-- CLIP was developed by OpenAI — trained on 400 million image-caption pairs
-  - Massive dataset scraped from the internet
-  - Each example: an image paired with a text description
-- Two separate neural networks:
-  - Text encoder: takes in words → outputs a 512-dimensional vector
-  - Image encoder: takes in an image → outputs a 512-dimensional vector
-  - Both vectors live in the SAME 512-dimensional space
-- Contrastive training — the key innovation:
-  - Show the model a photo of a dog and the caption "a photo of a dog"
-  - Push their vectors CLOSER together in the shared space
-  - Show the model the same photo with the caption "a red sports car"
-  - Push their vectors FARTHER apart
-  - Repeat 400 million times
-- After training:
-  - Images and text descriptions of the same thing point in similar directions
-  - Cosine similarity = measuring the angle between vectors
-  - Small angle = similar, large angle = different
-- This is what bridges the gap between text and images
-  - Without CLIP, there's no way to connect "astronaut" (a word) to astronaut images (pixels)
+- OpenAI trained CLIP on 400M image-caption pairs scraped from the internet
+- Two networks: text encoder → 512-dim vector; image encoder → 512-dim vector; same shared space
+- Contrastive training: matching pair → push vectors closer; non-matching → push apart; repeat 400M times
+- After training: same-content text and images point in similar directions; cosine similarity measures the angle
+- Without CLIP, no way to connect "astronaut" (word) to astronaut images (pixels)
 
 ---
 
@@ -189,23 +152,10 @@ After training, you can compare ANY text to ANY image by measuring the angle bet
 
 **Speaker notes:**
 
-- Same concept arithmetic from word embeddings, but now spanning images AND text
-  - Take a photo of someone in a hat
-  - Take a photo of the same person without a hat
-  - Subtract the image vectors
-  - The difference points in a direction — find the nearest text
-  - The nearest text is "hat"
-- The model has learned a pure concept direction for "hat"
-  - Not tied to any specific hat, any specific person, any specific photo
-  - A general "hat-ness" direction in the shared space
-- This is the same kind of geometric structure we saw with word embeddings
-  - "King - man + woman ≈ queen" — directions encoding concepts
-  - But CLIP extends this across modalities
-  - Text and images are in the SAME space with the SAME geometric structure
-- Why this matters for image generation:
-  - If you can represent ANY concept as a direction in this space...
-  - And you can represent ANY text prompt as a vector in this space...
-  - Then you have a mathematical target for the diffusion model to aim at
+- image(person with hat) - image(person without hat) → difference vector → nearest text = "hat"
+- Model learned a general "hat-ness" direction — not tied to any specific hat or person
+- Same as "king - man + woman ≈ queen" but now works ACROSS modalities (images and text in same space)
+- Why it matters: any concept = a direction, any prompt = a vector → mathematical target for diffusion to aim at
 
 ---
 
@@ -234,22 +184,10 @@ Imagine someone slowly stirring mud into clear water, taking photos at each stag
 
 **Speaker notes:**
 
-- The training process for diffusion models is elegantly simple
-  - Start with a clean image from the training set
-  - Add random noise in steps — each step adds a little more
-  - Eventually the image is completely destroyed — pure random noise
-- The model learns to reverse this destruction
-  - Given a noisy image, predict what the TOTAL noise looks like
-  - This is a key subtlety — NOT predicting one step of noise
-  - It predicts ALL the noise that was added, in one shot
-  - Subtract the predicted noise → get back to the clean image
-- Why predict total noise instead of single steps?
-  - Much more efficient — skip all intermediate steps
-  - The model learns the full noise pattern at any corruption level
-- During generation (inference), the model starts from pure random noise
-  - Predicts and removes noise in several steps
-  - Each step removes some noise, leaving a cleaner image
-  - After enough steps: a coherent image emerges from nothing
+- Training: take clean image → add noise in steps until destroyed → pure random noise
+- Model learns to predict TOTAL noise in one shot (not step-by-step) → subtract predicted noise → recover image
+- Key subtlety: predicts ALL noise at once, not one step — much more efficient
+- Generation: start from pure random noise → predict/remove noise in several steps → coherent image emerges
 
 ---
 
@@ -272,22 +210,10 @@ Imagine someone slowly stirring mud into clear water, taking photos at each stag
 
 **Speaker notes:**
 
-- Powerful intuition: think of images as points in a space
-  - A 1-megapixel image = a point in a million-dimensional space
-  - But we'll use a 2D spiral to build intuition
-- Real images cluster — they don't fill the whole space
-  - Most random pixel combinations look like static, not real photos
-  - Real photos occupy a tiny fraction of all possible pixel arrangements
-  - In our 2D analogy: real images form a spiral pattern
-- Adding noise = random walks (Brownian motion)
-  - Each point gets nudged in a random direction
-  - Small nudges → points stay near the spiral
-  - Big nudges → points scatter everywhere
-  - This is exactly what Einstein described with pollen grains in water
-- The diffusion model learns to reverse these walks
-  - Given a scattered point, which direction leads back to the spiral?
-  - Given a noisy image, which direction leads back to a real image?
-  - Same question, different dimensionality
+- Every image = a point in high-dimensional space (1-megapixel = million dimensions); use 2D spiral as intuition
+- Real images cluster in tiny fraction of the space — most random pixel combos are just static
+- Adding noise = random walks (Brownian motion): small nudges → stay near spiral; big nudges → scatter everywhere
+- Diffusion model reverses the walks: given a scattered point, which direction leads back to real data?
 
 ---
 
@@ -312,21 +238,11 @@ Time conditioning is what makes diffusion work at all. Without knowing the noise
 
 **Speaker notes:**
 
-- The model learns a **vector field** — arrows everywhere in the space
-  - Each arrow says: "from this point, go THIS direction to get closer to real data"
-  - Collectively, they point scattered noise back toward real images
-- This vector field is called the **score function**
-  - Mathematical term: the gradient of the log probability of the data
-  - Intuitive term: "the direction toward the good stuff"
-- Time conditioning — absolutely critical:
-  - The model takes in TWO inputs: the noisy data AND a time step t
-  - Time step tells it HOW noisy the input is
-  - Large t (very noisy): model focuses on big picture — is this a face? A landscape? An animal?
-  - Small t (slightly noisy): model focuses on details — sharpen this edge, add texture there
-- During generation, time steps go from large to small
-  - First passes: establish coarse structure (rough shapes, layout)
-  - Middle passes: refine medium-scale features (objects, proportions)
-  - Final passes: add fine details (textures, lighting, sharpness)
+- Model learns a vector field (score function): at every point, an arrow pointing back toward real data
+- Score function = gradient of log probability = "direction toward the good stuff"
+- Time conditioning is critical: model takes noisy data + time step t (tells it HOW noisy)
+- Large t → focus on big picture (face? landscape?); small t → focus on fine details (edges, textures)
+- Generation goes large-t to small-t: coarse structure first → medium features → fine details last
 
 ---
 
@@ -348,21 +264,10 @@ Time conditioning is what makes diffusion work at all. Without knowing the noise
 
 **Speaker notes:**
 
-- This is a subtle but crucial point
-  - The model learns the AVERAGE direction at each point
-  - If many different images could have produced this noisy version, the model points toward their average
-  - Following the average direction all the way → you end up at the average image
-  - Average of all faces = a blurry, generic face with no distinctive features
-- Adding noise during generation breaks this convergence
-  - Small random kicks push the generation path off the "average highway"
-  - Different random kicks → different final images
-  - The noise allows sampling from the full distribution, not just the center
-- This is why the same prompt produces different images each time
-  - Different random starting noise + different random kicks = different paths
-  - Each path ends at a valid, sharp image — just a different one
-- The math: this relates to **stochastic differential equations**
-  - The noise term ensures proper sampling from the learned distribution
-  - Without it, you get the mode/mean instead of diverse samples
+- Model learns AVERAGE direction at each point — following it all the way → blurry generic "average image"
+- Adding noise during generation = random kicks that prevent convergence to the mean
+- Different random kicks → different final images; same prompt produces different results each time
+- Math: stochastic differential equations; noise ensures sampling from full distribution, not just the center
 
 ---
 
@@ -385,21 +290,10 @@ Time conditioning is what makes diffusion work at all. Without knowing the noise
 
 **Speaker notes:**
 
-- DDPM — the original approach — uses random noise at every step
-  - Many steps needed (~1000) for good results
-  - Random → different image each time, even from same starting noise
-  - Slow: 1000 neural network passes per image
-- DDIM — a major practical improvement
-  - Replaces the random walk with smooth differential equations
-  - Follows the learned vector field like a smooth flow
-  - No random noise added during generation
-  - Deterministic: same starting noise = same final image every time
-- Practical benefits:
-  - Fewer steps needed — 20 to 50 instead of 1000
-  - Huge speedup for generation
-  - Same quality and diversity of outputs (diversity comes from different starting noise)
-- The math: ordinary differential equations (ODEs) vs. stochastic differential equations (SDEs)
-  - Don't need to understand the math — the intuition is smooth flow vs. noisy walk
+- DDPM (original): random noise each step, ~1000 steps needed, slow
+- DDIM (improved): smooth ODEs instead of random walk, deterministic, 20-50 steps instead of 1000
+- Same starting noise = same final image; diversity comes from choosing different starting noise
+- Intuition: smooth flow vs. noisy walk — huge speedup, same quality
 
 ---
 
@@ -427,22 +321,10 @@ Classifier-free guidance asks: "What's the difference between what you'd generat
 
 **Speaker notes:**
 
-- This is the mechanism that connects your text prompt to the generated image
-  - Two runs of the model at each denoising step
-  - Run 1: "denoise this, guided by the prompt" → conditioned prediction
-  - Run 2: "denoise this, with no prompt at all" → unconditioned prediction
-- The difference between the two = what the prompt is contributing
-  - Subtract unconditioned from conditioned → isolate the prompt's effect
-  - This tells you: "HERE is the direction that represents your text prompt"
-- Alpha (guidance scale) amplifies this difference
-  - Higher alpha = more influence from the prompt
-  - Lower alpha = more "generic" image, less prompt adherence
-- The tree example is vivid:
-  - As alpha increases, the tree literally grows — more branches, fuller canopy, more tree-like
-  - The model is exaggerating the "tree-ness" direction
-  - Too much alpha → oversaturated, unrealistic, but unmistakably what you asked for
-- This is computationally expensive — 2× the neural network passes
-  - But the results are dramatically better than single-pass generation
+- Two runs per step: conditioned (with prompt) vs. unconditioned (no prompt) — difference = prompt's contribution
+- Subtract unconditioned from conditioned → isolate prompt's effect → amplify by alpha (guidance scale)
+- Higher alpha = more prompt influence (tree literally grows); too high = oversaturated/distorted
+- Computationally 2x (two passes per step) but dramatically better results
 
 ---
 
@@ -463,26 +345,10 @@ Classifier-free guidance asks: "What's the difference between what you'd generat
 
 **Speaker notes:**
 
-- Negative prompts use the same guidance math, just in the opposite direction
-  - Positive prompt: "steer toward this" → amplify
-  - Negative prompt: "steer away from this" → subtract
-- Practical use cases from WAN 2.1:
-  - "extra fingers" — a common artifact in AI-generated images
-  - "walking backwards" — a common artifact in AI-generated videos
-  - "blurry, low quality, deformed" — general quality boosters
-- How it works mathematically:
-  - Compute the direction for the negative prompt
-  - Subtract it from the generation direction
-  - The model actively avoids those features
-- This gives users fine-grained control:
-  - Positive prompt: what you want
-  - Negative prompt: what you don't want
-  - Guidance scale: how strongly to enforce both
-- Real workflow for AI image generation:
-  - Craft your positive prompt
-  - Add negative prompts for known problem areas
-  - Adjust guidance scale to taste
-  - Generate multiple versions with different random seeds
+- Same guidance math in reverse: positive = "steer toward," negative = "steer away" (subtract direction)
+- Common negatives: "extra fingers," "walking backwards," "blurry, low quality, deformed"
+- Compute negative prompt direction → subtract from generation direction → model actively avoids those features
+- Real workflow: positive prompt (what you want) + negative prompt (what you don't) + guidance scale + multiple seeds
 
 ---
 
@@ -509,26 +375,10 @@ These weren't designed as one unified system. CLIP, diffusion, and guidance were
 
 **Speaker notes:**
 
-- Step back and appreciate how the pieces fit:
-  - CLIP: "text and images can live in the same vector space"
-  - Diffusion: "you can generate images by reversing noise"
-  - Guidance: "you can steer generation using vectors from text"
-  - Each piece was developed somewhat independently — they weren't designed as one system
-- The unifying thread: high-dimensional geometry
-  - Concepts are directions — we saw this with word embeddings ("king - man + woman = queen")
-  - CLIP extends this to images — hat direction, style direction, content direction
-  - Diffusion uses vector fields — arrows pointing toward real data
-  - Guidance manipulates those vectors using text-derived directions
-  - Same math, same intuitions, different applications
-- "All you need is language" — once concepts become vectors:
-  - You can search for images using text (CLIP)
-  - You can generate images from text (diffusion + guidance)
-  - You can edit images with text (change directions in the space)
-  - Language becomes the universal interface to visual content
-- Connection to earlier sessions:
-  - The embedding directions, dot products, and high-dimensional spaces from the LLM sessions
-  - All the same principles at work, extended to a new domain
-  - Understanding one deeply gives you intuition for the other
+- Three independent breakthroughs that snap together: CLIP (shared space), Diffusion (reverse noise), Guidance (steer with text)
+- Unifying thread = high-dimensional geometry: concepts are directions, dot products measure similarity, vector fields guide generation
+- "All you need is language" — once concepts become vectors: search, generate, and edit images with text
+- Same math as LLM embedding spaces from earlier sessions, just applied to a new domain
 
 ---
 

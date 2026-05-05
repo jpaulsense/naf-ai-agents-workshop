@@ -46,15 +46,10 @@
 
 **Speaker notes:**
 
-- Start with the concrete question — type "Michael Jordan plays the sport of ___" and the model says "basketball"
-  - Not a lucky guess — it does this reliably, across many phrasings
-  - Same for thousands of other facts: capitals, dates, scientific knowledge
-- The model has billions of parameters across many layers
-  - The fact is in there *somewhere*
-  - But which part? Is it in the attention layers? The embedding? Spread everywhere?
-- This is a real active research question — not fully solved
-  - But we have strong evidence pointing to a specific location
-  - That's what this session is about
+- Model reliably completes "Michael Jordan plays the sport of ___" → "basketball" across many phrasings
+- Works for thousands of facts: capitals, dates, scientific knowledge — not luck
+- Billions of parameters across many layers — the fact is encoded somewhere, but where?
+- Active research question, not fully solved — but strong evidence points to a specific location
 
 ---
 
@@ -76,15 +71,9 @@ Attention figures out *which words matter to each other*. MLPs figure out *what 
 
 **Speaker notes:**
 
-- Google DeepMind research — landmark finding about fact storage
-  - Systematically tested which components matter for factual recall
-  - Attention can be disrupted without losing facts
-  - Disrupting MLP layers destroys factual knowledge
-- Clean division of labor in the Transformer:
-  - Attention = context, word relationships, "who is talking about whom"
-  - MLP = knowledge bank, fact storage, "what do I know about this topic"
-- This finding gives us a specific place to look
-  - Let's understand how MLP blocks actually work
+- DeepMind systematically tested which components matter — disrupting attention doesn't lose facts, disrupting MLPs does
+- Division of labor: Attention = context/word relationships; MLP = knowledge bank/fact storage
+- This gives us a specific place to look — now let's understand how MLP blocks work
 
 ---
 
@@ -105,17 +94,10 @@ Attention figures out *which words matter to each other*. MLPs figure out *what 
 
 **Speaker notes:**
 
-- Quick refresher on the Transformer architecture
-  - Tokens come in, get converted to embedding vectors (lists of numbers)
-  - Those vectors flow upward through alternating blocks
-- Two block types, alternating:
-  - Attention (blue) — words talk to each other, share context
-  - MLP (green) — each word processed alone, knowledge injected
+- Tokens → embedding vectors → flow through alternating Attention (blue) and MLP (green) blocks
+- Attention: words share context with each other; MLP: each word processed alone, knowledge injected
 - GPT-3: 96 layers of each = 192 total blocks
-- After all layers, final vector gets converted back to word probabilities
-- Today's focus: those green MLP blocks
-  - What's actually happening inside them?
-  - How do they store and retrieve facts?
+- Final vector → word probabilities; today's focus = the green MLP blocks
 
 ---
 
@@ -135,18 +117,9 @@ Attention figures out *which words matter to each other*. MLPs figure out *what 
 
 **Speaker notes:**
 
-- Four steps — each one has a specific job
-  - Step 1: Up-projection — expand the vector into a much larger space (~50,000 values)
-  - Step 2: ReLU — kill all negative values, keep positives
-  - Step 3: Down-projection — compress back down to original size
-  - Step 4: Add result back to the original vector
-- The "up then down" shape is key
-  - Go from ~12,000 dimensions up to ~50,000, then back down to ~12,000
-  - The expansion is roughly 4× the embedding dimension
-- Each step has a specific purpose — let's walk through them one at a time
-  - Up-projection = "asking questions"
-  - ReLU = "yes/no gate"
-  - Down-projection = "injecting answers"
+- Four steps: up-projection (expand ~12K → ~50K), ReLU (kill negatives), down-projection (compress ~50K → ~12K), add back to original
+- Expansion is ~4x the embedding dimension
+- Up-projection = "asking questions," ReLU = "yes/no gate," down-projection = "injecting answers"
 
 ---
 
@@ -171,18 +144,10 @@ Think of it like a checklist with 50,000 yes/no questions. The vector walks down
 
 **Speaker notes:**
 
-- The matrix has ~50,000 rows — that's 4× the embedding dimension
-  - Each row is a direction in the high-dimensional space
-  - Think of each row as encoding a specific question or detector
-- Dot product = "how much does my input align with this direction?"
-  - High positive number = strong alignment = "yes"
-  - Near zero = no particular alignment
-  - Negative = opposite direction
-- All 50,000 questions get asked simultaneously
-  - Massively parallel — this is why GPUs matter
-- After this step, you have a column of ~50,000 scores
-  - Each score = the answer to one question about the input
-  - But we're not done — the bias and ReLU haven't happened yet
+- ~50,000 rows (4x embedding dim), each row = a direction/detector in high-dimensional space
+- Dot product = "how much does input align with this direction?" — positive = yes, negative = no
+- All 50,000 questions asked simultaneously (massively parallel, why GPUs matter)
+- Output: column of ~50,000 scores — still need bias + ReLU before it means anything
 
 ---
 
@@ -210,19 +175,10 @@ The combination of directional weights + bias creates a logical AND gate: the ne
 
 **Speaker notes:**
 
-- Walk through the Michael Jordan example step by step
-  - One row in the up-projection matrix encodes two directions: Michael + Jordan
-  - Dot product measures alignment with EACH direction
-- The crucial trick is the bias
-  - Bias of -1 means the total must exceed 1 to produce a positive result
-  - Full name "Michael Jordan" → ~2, minus 1 = ~1 → positive
-  - Just "Michael" → ~1, minus 1 = ~0 → not positive
-  - Just "Jordan" → ~1, minus 1 = ~0 → not positive
-- This is functionally an AND gate
-  - Fires if Michael AND Jordan, not just one or the other
-  - Built entirely from matrix multiplication and a bias term
-  - No one programmed this logic — the network learned it during training
-- Powerful concept: simple linear algebra creates logical operations
+- One row encodes two directions: Michael + Jordan; dot product measures alignment with each
+- Bias of -1 = threshold requiring both: "Michael Jordan" → 2-1=1 (fires); just "Michael" → 1-1=0 (doesn't)
+- Functionally an AND gate — built from matrix multiply + bias, learned during training, not programmed
+- Simple linear algebra creates logical operations
 
 ---
 
@@ -244,23 +200,10 @@ The combination of directional weights + bias creates a logical AND gate: the ne
 
 **Speaker notes:**
 
-- ReLU is dead simple — possibly the simplest useful function in all of AI
-  - Negative input → output is zero
-  - Positive input → output equals the input, unchanged
-  - That's it — no fancy math
-- Why it matters here:
-  - After up-projection + bias, each "question" has a score
-  - ReLU decides: did the score survive? Is it positive?
-  - If yes → this neuron is "active" → this feature was detected
-  - If no → this neuron is "inactive" → zeroed out → contributes nothing
-- Combined with the bias trick:
-  - "Michael Jordan" → score of ~1 → ReLU passes it through → ACTIVE
-  - Just "Michael" → score of ~0 → ReLU clips to zero → INACTIVE
-  - The AND gate is now fully operational
-- After ReLU, you have ~50,000 values
-  - Most are zero (inactive) — the input didn't match those features
-  - A few are positive (active) — these features were detected
-  - Only the active neurons move on to the next step
+- ReLU: negative → zero, positive → unchanged; simplest useful function in AI
+- Positive score = neuron "active" (feature detected); zero/negative = "inactive" (contributes nothing)
+- With bias trick: "Michael Jordan" → ~1 → passes ReLU → ACTIVE; just "Michael" → ~0 → clipped → INACTIVE
+- After ReLU: most of ~50,000 values are zero; only the few active neurons proceed to next step
 
 ---
 
@@ -285,22 +228,10 @@ Think of a filing cabinet with 50,000 folders. Each folder contains knowledge ab
 
 **Speaker notes:**
 
-- Now think about the down-projection matrix column by column
-  - Each of the ~50,000 columns corresponds to one neuron
-  - Each column IS a direction in embedding space — it encodes what to add
-- The "Michael Jordan" neuron's column:
-  - Points in the "basketball" direction in embedding space
-  - When this neuron is active, the column gets scaled by the activation value and added
-  - When inactive (zeroed by ReLU), the column is multiplied by zero — contributes nothing
-- Single column, multiple facts:
-  - One column can encode "basketball + Chicago Bulls + jersey #23 + slam dunk"
-  - All packed into one direction in the high-dimensional space
-  - Directions can carry multiple pieces of associated information simultaneously
-- Filing cabinet analogy:
-  - 50,000 folders, each containing knowledge about a specific topic
-  - Up-projection + ReLU = deciding which folders to open
-  - Down-projection = the actual knowledge inside the folder
-  - Only opened folders contribute to the output
+- Down-projection: ~50,000 columns, each column = a direction in embedding space encoding what knowledge to add
+- "Michael Jordan" neuron's column points in "basketball" direction — active → column added; inactive → zero contribution
+- One column can encode multiple associated facts: basketball + Chicago Bulls + #23 + slam dunk
+- Filing cabinet analogy: up-projection + ReLU = which folders to open; down-projection = the knowledge inside
 
 ---
 
@@ -325,20 +256,9 @@ The entire process is just matrix multiplication, subtraction, and zeroing out n
 
 **Speaker notes:**
 
-- Walk through the complete pipeline end to end
-  - Start: vector that encodes "Michael Jordan" arrives at an MLP block
-  - Up-projection: 50,000 questions asked simultaneously via dot products
-  - One row = the "Michael + Jordan" detector → dot product ≈ 2
-  - Bias of -1 → result ≈ 1 → positive
-  - ReLU: positive value passes through → neuron is ACTIVE
-  - Down-projection: active neuron's column = "basketball" direction
-  - Scaled by activation value and added to original vector
-  - Output: vector now carries both "Michael Jordan" AND "basketball"
-- The final unembedding layer later converts this enriched vector into probabilities
-  - "Basketball" gets a high probability as the next word
-- All from matrix math — no lookup table, no database, no if/then rules
-  - The "knowledge" is encoded in the weights of two matrices
-  - Learned entirely from training data via gradient descent
+- Full pipeline: "Michael Jordan" vector → up-projection (50K dot products) → one row detects "Michael+Jordan" (≈2) → bias -1 → ≈1 → ReLU passes → down-projection column = "basketball" direction → added to vector
+- Output vector now carries "Michael Jordan + basketball" → unembedding gives "basketball" high probability
+- No lookup table, no database, no if/then — knowledge is in the matrix weights, learned via gradient descent
 
 ---
 
@@ -365,20 +285,10 @@ The entire process is just matrix multiplication, subtraction, and zeroing out n
 
 **Speaker notes:**
 
-- The scale of MLP layers is staggering
-  - Each MLP block: two matrices + biases ≈ 1.2 billion parameters
-  - 96 layers × 1.2B = ~116 billion parameters
-  - That's about two-thirds of all of GPT-3
-- Attention gets all the headlines — "Attention Is All You Need"
-  - But attention is only one-third of the parameters (~58 billion)
-  - The quiet majority of the model is MLP fact storage
-- Think about what 116 billion parameters means:
-  - 116 billion individual numbers, each tuned by gradient descent
-  - Each one contributing to the model's ability to store and retrieve facts
-  - Trained on ~300 billion tokens of text
-- This is why larger models know more facts
-  - More MLP parameters = more capacity for knowledge storage
-  - More training data = more facts to encode
+- Each MLP block ≈ 1.2B params; 96 layers × 1.2B = ~116B params = two-thirds of GPT-3
+- Attention gets the headlines but is only ~58B (one-third); MLPs are the quiet majority
+- 116B numbers tuned by gradient descent on ~300B tokens of text
+- Larger models know more facts: more MLP params = more knowledge storage capacity
 
 ---
 
@@ -404,24 +314,11 @@ This is why bigger models are dramatically more capable — not just proportiona
 
 **Speaker notes:**
 
-- The naive expectation: each neuron = one clean concept
-  - "The Michael Jordan neuron," "the basketball neuron," etc.
-  - This is NOT how it works in practice
-- Reality: **superposition**
-  - Features overlap and share neurons
-  - Like multiple radio stations broadcasting on overlapping frequencies
-  - Any single neuron participates in encoding many different concepts
-- Why this works — high-dimensional geometry:
-  - In 2D, you can only have 2 perpendicular directions
-  - In 3D, you can have 3
-  - But in 12,288 dimensions? The rules change dramatically
-- Johnson-Lindenstrauss lemma:
-  - 100 dimensions can hold 10,000+ nearly perpendicular vectors
-  - "Nearly perpendicular" = close enough to independent that they don't interfere much
-  - The growth is exponential, not linear
-- Grant's key quote: "A space with 10 times as many dimensions can store way, way more than 10 times as many independent ideas"
-  - This is why scaling models up makes them disproportionately more capable
-  - Double the parameters → exponentially more room for knowledge
+- NOT one neuron = one concept; reality is superposition — features overlap, neurons participate in many concepts
+- Like radio stations on overlapping frequencies — any single neuron encodes many things
+- High-dimensional geometry: 2D → 2 perpendicular directions; 12,288D → rules change dramatically
+- Johnson-Lindenstrauss: 100 dimensions can hold 10,000+ nearly-perpendicular vectors; growth is exponential
+- Grant's quote: "10x dimensions = way more than 10x independent ideas" — why scaling works so disproportionately well
 
 ---
 
@@ -441,21 +338,10 @@ This is why bigger models are dramatically more capable — not just proportiona
 
 **Speaker notes:**
 
-- If neurons don't cleanly represent concepts, how do we understand what the model learned?
-  - This is the field of **mechanistic interpretability**
-  - Trying to reverse-engineer what's going on inside neural networks
-- Sparse autoencoders are one key tool:
-  - Developed significantly by Anthropic (makers of Claude)
-  - Take the overlapping, superimposed neuron activations
-  - Decompose them into individual, interpretable features
-- Analogy: multiple people talking at once in a room
-  - A single microphone picks up a jumbled mix of voices
-  - Sparse autoencoder = software that separates the individual voices
-  - Each separated voice = one clean feature the model learned
-- This is cutting-edge research — still an active area
-  - We don't yet have complete tools to fully understand what's inside these models
-  - But progress is accelerating
-- Why it matters: understanding what models know (and don't know) is critical for trust and safety
+- Field = mechanistic interpretability — reverse-engineering what's inside neural networks
+- Sparse autoencoders (Anthropic et al.): decompose superimposed neuron activations into individual interpretable features
+- Analogy: multiple people talking → microphone picks up jumble → software separates individual voices
+- Cutting-edge research, not fully solved yet — but critical for trust and safety
 
 ---
 

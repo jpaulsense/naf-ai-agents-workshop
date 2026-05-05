@@ -46,16 +46,9 @@ An LLM is a text-completion machine. It doesn't "know" things the way you do. It
 
 **Speaker notes:**
 
-- Grant opens this video with a great analogy — imagine a movie script
-  - A character is interacting with an AI on screen
-  - Someone tears off the AI's response — your job is to guess what it said
-  - To predict well, you'd draw on everything you know about how AI assistants typically respond
-- That's exactly what a large language model does
-  - It takes all the text so far and predicts the most likely continuation
-  - Not by "understanding" in the human sense — by recognizing patterns from training data
-- This framing is useful because it strips away the mystique
-  - No consciousness, no understanding, no intent
-  - Just: "given this setup, what text would a human most likely have written next?"
+- Movie script analogy: character asks AI a question, AI's response is torn off — your job is to predict what was written
+- LLM = takes all text so far, predicts most likely continuation based on patterns from training data
+- No consciousness, no understanding, no intent — just "what text would plausibly come next?"
 
 ---
 
@@ -79,18 +72,10 @@ The LLM doesn't retrieve answers from a database. It *generates* them by repeate
 
 **Speaker notes:**
 
-- Let's be precise about what an LLM is
-  - It is a mathematical function — numbers in, numbers out
-  - The input: your text, converted to token IDs (we covered tokenization earlier)
-  - The output: a probability for every word in its vocabulary
-- It doesn't pick just one answer — it scores all ~50,000 possible next tokens
-  - "Paris" might get 68%, "a" might get 4%, "the" might get 3%
-  - Then it samples from that distribution — usually picking a high-probability word, but with some randomness
-- Then it appends the chosen word to the input and runs the whole function again
-  - "The capital of France is Paris" → now predict the next word after "Paris"
-  - This is how it generates entire paragraphs — one word at a time, autoregressively
-- Important: it doesn't look up answers in a database or search the internet (unless given tools to do so)
-  - Everything comes from the patterns encoded in its parameters during training
+- LLM is a mathematical function: text (as token IDs) in, probability distribution over ~50,000 possible next tokens out
+- Scores entire vocabulary — "Paris" 68%, "a" 4%, "the" 3% — then samples from distribution with some randomness
+- Appends chosen word, reruns the function — generates paragraphs one token at a time (autoregressive)
+- Does not look up answers in a database — everything comes from patterns encoded in parameters during training
 
 ---
 
@@ -116,17 +101,10 @@ The blinking cursor shows where the LLM starts generating. Arrows point to each 
 
 **Speaker notes:**
 
-- Here's the trick that turns a text predictor into a chatbot
-  - You lay out a specific format: system message, then user message, then "Assistant:"
-  - The LLM sees this formatted text and predicts what would come after "Assistant:"
-  - It doesn't "know" it's an assistant — it's just completing the pattern
-- The system message is like stage directions for an actor
-  - "You are a helpful assistant" → the model predicts helpful-sounding text
-  - "You are a pirate" → the model predicts pirate-sounding text
-  - Same model, same parameters — just different text context leading to different predictions
-- This is why ChatGPT, Claude, and other chatbots all feel similar despite being different models
-  - They're all LLMs trained on similar data, given similar conversation formats
-  - The differences come from training data choices, fine-tuning approaches, and system prompts
+- Chatbot = LLM with a formatted template: system message → user message → "Assistant:" — model predicts what follows
+- System message is stage directions: "helpful assistant" → helpful text; "pirate" → pirate text — same model, different context
+- ChatGPT/Claude/etc. feel similar because they're all LLMs with similar training data and conversation formats
+- Differences come from training data choices, fine-tuning, and system prompts
 
 ---
 
@@ -150,18 +128,9 @@ Think of a massive mixing board in a recording studio — thousands of sliders a
 
 **Speaker notes:**
 
-- The model's entire "intelligence" lives in its parameters
-  - Weights in the attention layers (we covered query, key, value matrices)
-  - Weights in the MLP/feed-forward layers (the knowledge storage layers)
-  - Biases at each neuron
-  - Embedding values for each token
-- GPT-3 has 175 billion of these numbers
-  - That's roughly one parameter for every star in the Milky Way galaxy
-  - GPT-4 is rumored to be much larger — exact number not publicly confirmed
-  - Claude's parameter count is also not public, but it's in the same ballpark
-- With random parameters, the model outputs pure gibberish
-  - Not even grammatically correct — just random token sequences
-  - The magic is entirely in how those parameters get set during training
+- All "intelligence" lives in parameters: attention weights, MLP weights, biases, embedding values
+- GPT-3 = 175 billion parameters — roughly one per star in the Milky Way; GPT-4 and Claude are larger (exact counts not public)
+- Random parameters = pure gibberish; the magic is entirely in how training sets those values
 
 ---
 
@@ -188,21 +157,10 @@ Think of a massive mixing board in a recording studio — thousands of sliders a
 
 **Speaker notes:**
 
-- Training is exactly the process we covered in earlier chapters — just at enormous scale
-  - Same gradient descent, same backpropagation, same cost function
-  - The cost: "how surprised was the model by the actual next word?"
-  - If the model predicted "Paris" with high probability and the answer was "Paris" — low cost, small adjustment
-  - If the model predicted "banana" with high probability and the answer was "Paris" — high cost, big adjustment
-- The training data is a massive corpus of text from the internet
-  - Books, websites, Wikipedia, code, scientific papers, forums, news articles
-  - GPT-3 trained on roughly 300 billion tokens of text
-  - The model sees each example, makes a prediction, gets corrected, and adjusts — billions of times
-- The progression from gibberish to coherence is gradual
-  - First the model learns basic character and word patterns
-  - Then grammar and sentence structure
-  - Then facts and relationships
-  - Then nuance, tone, and reasoning patterns
-  - Each step is a tiny nudge — but billions of tiny nudges add up to something remarkable
+- Same gradient descent / backpropagation from earlier chapters, just at enormous scale
+- Cost function = "how surprised was the model by the actual next word?" — high confidence + wrong answer = big adjustment
+- Training data: books, Wikipedia, code, papers, forums, news — GPT-3 trained on ~300 billion tokens
+- Progression: character patterns → grammar → facts → nuance/reasoning — billions of tiny nudges compound
 
 ---
 
@@ -226,19 +184,9 @@ The training is the expensive part — it happens once. After that, the model is
 
 **Speaker notes:**
 
-- Grant puts the computational scale in perspective with a striking number
-  - If you could do a billion operations per second — which is roughly what a modern CPU does
-  - Training GPT-3 would take over 100 million years
-  - That's longer than the time since dinosaurs went extinct
-- The solution: massive parallelism
-  - Thousands of GPUs (graphics processing units) or TPUs (tensor processing units) working simultaneously
-  - Training runs last weeks to months even with this hardware
-  - The electricity bill alone is staggering
-- Important distinction: training vs. inference
-  - Training: the expensive, one-time process of setting the parameters (months, millions of dollars)
-  - Inference: using the trained model to generate text (milliseconds, fractions of a cent per query)
-  - When you use ChatGPT, the model is already trained — you're just running inference
-  - The parameters are frozen — they don't change when you chat with it
+- At 1 billion ops/sec, training GPT-3 would take 100+ million years — longer than since dinosaurs went extinct
+- Solution: thousands of GPUs/TPUs in parallel, training runs last weeks-to-months; GPT-3 cost $4-12M, GPT-4 ~$100M+
+- Training (expensive, one-time, months) vs. inference (cheap, milliseconds per query, parameters frozen)
 
 ---
 
@@ -261,21 +209,11 @@ Pre-training is like going to school — you absorb a massive amount of general 
 
 **Speaker notes:**
 
-- Most people don't realize there are two distinct training phases
-- **Pre-training** is what we've been discussing: predict the next word on billions of text examples
-  - This produces a model that's very good at continuing text
-  - But it's not a helpful assistant — it might continue a question with *another* question
-  - Or it might produce toxic content if the training data contained toxic text
-  - It's a mirror of the internet — brilliant and terrible in equal measure
-- **RLHF** — Reinforcement Learning from Human Feedback — is the second phase
-  - Humans generate pairs of responses and pick the better one
-  - "Response A is helpful and accurate. Response B is evasive and wrong."
-  - The model's parameters get adjusted to produce more responses like A and fewer like B
-  - This is what turns a raw text predictor into a polite, helpful, safety-conscious assistant
-- This two-phase process is why the models are called "pre-trained" (the P in GPT)
-  - Phase 1 gives it knowledge and language ability
-  - Phase 2 gives it manners and helpfulness
-- The RLHF phase uses far less compute than pre-training but has an outsized effect on behavior
+- Phase 1 (pre-training): predict next word on billions of examples — produces a text predictor, not a helpful assistant
+- Raw pre-trained model mirrors the internet (brilliant and terrible) — might answer a question with another question or produce toxic text
+- Phase 2 (RLHF): humans rate response pairs, parameters nudge toward preferred answers — turns predictor into helpful assistant
+- Pre-training = knowledge and language ability; RLHF = manners and helpfulness
+- RLHF uses far less compute than pre-training but has outsized effect on behavior
 
 ---
 
@@ -299,20 +237,11 @@ The key innovation wasn't just *what* attention does — it's that attention is 
 
 **Speaker notes:**
 
-- We covered attention in depth earlier, so this is a quick recap in the LLM context
-- Before the Transformer architecture (introduced in 2017), language models processed text sequentially
-  - Read word 1, update internal state, read word 2, update, read word 3...
-  - Like reading a book one word at a time with a tiny notepad for memory
-  - This was slow and made it hard to connect distant words
-- The Transformer changed everything by processing all words at once
-  - Every word can "look at" every other word simultaneously through attention
-  - This is massively parallelizable — GPUs can compute thousands of attention scores at the same time
-  - Grant emphasizes this: a big reason Transformers won is that they're *efficient to run on modern hardware*
-- Two alternating layer types:
-  - Attention: words talk to each other, update meanings based on context
-  - Feed-forward/MLP: each word processed independently, factual knowledge injected
-- The combination of parallel processing + attention + scale is what produced the breakthrough
-  - Same underlying math as our simple digit network — just organized differently and scaled enormously
+- Pre-2017 models processed text sequentially (one word at a time) — slow, hard to connect distant words
+- Transformers process all words at once; every word attends to every other simultaneously — massively parallelizable on GPUs
+- Two alternating layer types: attention (words talk to each other) and MLP (factual knowledge injected per word)
+- GPT-3 repeats attention+MLP 96 times — same math as simple digit network, just scaled enormously
+- Parallel processing + attention + scale = the breakthrough
 
 ---
 
@@ -335,27 +264,12 @@ The behavior of an LLM is *emergent* — it arises from the interaction of billi
 
 **Speaker notes:**
 
-- This is the point Grant ends on, and it's worth sitting with
-  - Nobody at OpenAI or Anthropic programmed "translate French to English"
-  - Nobody coded "write a sonnet in iambic pentameter"
-  - Nobody specified "when asked about chemistry, use correct formulas"
-  - All of these abilities emerged from one training objective: predict the next word
-- The parameters were set by gradient descent — billions of tiny adjustments over billions of examples
-  - No human decided what value weight #47,382,019,445 should have
-  - The training process found values that reduce prediction error — and complex behaviors emerged as a byproduct
-- This creates a fundamental interpretability challenge
-  - We can't open up the model and point to "this is the part that knows French"
-  - The knowledge is distributed across billions of parameters in ways we're still learning to understand
-  - Researchers are actively working on interpretability — figuring out what individual neurons and circuits represent
-- Practical implication for this audience:
-  - LLMs are powerful tools, but they're not fully predictable
-  - They can produce impressive results and also make confident-sounding mistakes
-  - Understanding *what* they are (a next-word predictor trained on internet text) helps you use them wisely
-  - They don't have beliefs, intentions, or understanding — they have patterns
-- This connects directly to why we're building agents in the workshop
-  - The LLM provides the language ability — pattern matching, text generation, reasoning-like behavior
-  - But we add structure around it — tools, workflows, guardrails — to make it reliable and useful
-  - Understanding the foundation helps you know when to trust the AI and when to verify
+- Nobody programmed "translate French" or "write a sonnet" — all emerged from one objective: predict the next word
+- Parameters set by gradient descent, not humans — no one decided what weight #47B should be; complex behaviors emerged as a byproduct
+- Interpretability challenge: can't point to "the part that knows French" — knowledge distributed across billions of parameters
+- LLMs are powerful but not fully predictable — they produce impressive results AND confident-sounding mistakes
+- No beliefs, intentions, or understanding — just patterns; understanding this helps you know when to trust vs. verify
+- Workshop connection: LLM provides language ability, we add tools/workflows/guardrails around it for reliability
 
 ---
 

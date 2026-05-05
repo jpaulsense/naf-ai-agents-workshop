@@ -44,18 +44,12 @@ Gradient descent is the strategy (go downhill). Backpropagation is the tactic (f
 
 **Speaker notes:**
 
-- Quick connection to Chapter 2:
-  - We learned that the gradient is a list of 13,002 numbers
-  - Each one tells you how to adjust a specific weight or bias to reduce the cost
-  - Gradient descent uses the gradient to take a step downhill
-- The missing piece: how do you actually compute the gradient?
-  - You have 13,002 parameters and a cost function that depends on all of them
-  - For each parameter, you need to know: "If I nudge this weight by a tiny amount, how much does the cost change?"
-  - That is 13,002 sensitivity calculations
-- **Backpropagation** is the algorithm that computes all of these efficiently
-  - The name says what it does — it propagates information backward through the network
-  - Invented independently several times, popularized in 1986 by Rumelhart, Hinton, and Williams
-  - Still the backbone of all neural network training today
+- Ch2 gave us the gradient (13,002 numbers) and gradient descent (step downhill)
+- Missing piece: how do you actually compute those 13,002 sensitivities?
+- Each one answers: "if I nudge this weight slightly, how much does cost change?"
+- **Backpropagation** = the algorithm that computes all gradients efficiently
+- Propagates information backward through the network; popularized 1986 (Rumelhart, Hinton, Williams)
+- Still the backbone of all neural network training today
 
 ---
 
@@ -73,20 +67,12 @@ Gradient descent is the strategy (go downhill). Backpropagation is the tactic (f
 
 **Speaker notes:**
 
-- Simplify by focusing on a single training example
-  - One image of a handwritten 2
-  - Feed it through the network, look at the output
-  - The output is scattered — the "2" neuron is not the strongest
-- Now ask the key question:
-  - "What adjustments does this one example want?"
-  - The "2" neuron should be higher — push it up
-  - All other neurons should be lower — push them down
-  - Some are already low — leave those alone. Some are high — those need the biggest corrections.
-- Grant's framing: think of each output neuron as having a "desire"
-  - The "2" neuron wants to be increased
-  - The "8" neuron (if it is high) wants to be decreased
-  - The strength of the desire is proportional to how far off the neuron is
-- This is the starting point for backpropagation — start at the output and work backward
+- Focus on one training image (a "2") — feed it through, look at output
+- Output is scattered; "2" neuron not the strongest
+- Key question: what does this example want changed?
+- "2" neuron should go up; all other neurons should go down
+- Strength of desire proportional to how far off each neuron is
+- Starting point for backprop: begin at the output, work backward
 
 ---
 
@@ -105,25 +91,11 @@ Gradient descent is the strategy (go downhill). Backpropagation is the tactic (f
 
 **Speaker notes:**
 
-- Focus on the "2" output neuron — we want its activation to go up
-  - Remember the formula: activation = squish(weighted sum + bias)
-  - Three things affect that weighted sum:
-- **Lever 1: Increase the bias**
-  - The bias is a direct threshold adjuster
-  - Raising it makes the neuron fire more easily regardless of input
-  - Simple but blunt — it does not depend on what the network sees
-- **Lever 2: Increase the weights**
-  - This is where it gets interesting
-  - Not all weights should change equally — it depends on the activations in the previous layer
-  - If a previous neuron has a high activation (say 0.9), the weight on that connection has high leverage
-  - If a previous neuron has a low activation (0.01), tweaking that weight barely does anything
-  - So you make the biggest weight adjustments on connections from the brightest neurons
-  - Grant's key point: "the most bang for the buck"
-- **Lever 3: Change the previous layer's activations**
-  - You cannot directly change activations — they are computed from the layer before
-  - But you can note what you *wish* the activations were
-  - This is the "propagating backward" part — desires for the previous layer's outputs
-  - The strength of the desire is proportional to the weight — heavily weighted connections carry louder requests
+- Want the "2" neuron's activation to go up; formula: activation = squish(weighted sum + bias)
+- **Lever 1 — Bias:** raise it → neuron fires more easily; blunt, input-independent
+- **Lever 2 — Weights:** adjust proportional to previous layer's activations; bright neuron (0.9) = high leverage, dim neuron (0.01) = negligible
+- **Lever 3 — Previous activations:** can't directly change them, but note what you *wish* they were; desire strength proportional to the weight on the connection
+- Lever 3 = the "propagating backward" part — passing desires to the previous layer
 
 ---
 
@@ -144,18 +116,11 @@ In a team, you give more responsibility to the people who are already contributi
 
 **Speaker notes:**
 
-- This is one of the most elegant aspects of backpropagation
-  - Weight adjustments are proportional to the sending neuron's activation
-  - If the upstream neuron is bright (high activation), even a small weight change creates a big effect
-  - If the upstream neuron is dim, weight changes are nearly irrelevant
-- So the learning naturally focuses on the active connections
-  - This is exactly Hebb's rule from neuroscience: "neurons that fire together wire together"
-  - When two neurons are both active, the connection between them gets strengthened
-  - A beautiful parallel between artificial and biological neural networks
-- Practical consequence:
-  - Showing the network a picture of a 2 strengthens connections from neurons that activate on 2-like features
-  - Neurons that stay quiet for 2s do not have their weights adjusted much
-  - Over many training examples, the network builds strong connections along the paths that matter for each digit
+- Weight adjustment proportional to sending neuron's activation
+- Bright upstream neuron = big effect from weight change; dim = nearly irrelevant
+- This IS Hebb's rule: "neurons that fire together wire together"
+- Showing a 2 strengthens connections from neurons that activate on 2-like features
+- Over many examples, strong connections form along paths that matter for each digit
 
 ---
 
@@ -173,17 +138,11 @@ In a team, you give more responsibility to the people who are already contributi
 
 **Speaker notes:**
 
-- So far we focused on the "2" neuron — but all 10 output neurons have opinions
-  - The "2" neuron wants to go up — it requests certain changes to the previous layer
-  - The "8" neuron (if incorrectly high) wants to go down — it requests different changes
-  - The "0" neuron (if already low) barely cares — its requests are tiny
-- All 10 sets of requests get added together
-  - Sometimes they agree: both the "2" neuron and the "8" neuron might want a certain previous neuron to change in the same direction
-  - Sometimes they conflict: the "2" neuron wants a previous neuron brighter, but the "3" neuron wants it dimmer
-  - The sum resolves these conflicts — the strongest combined signal wins
-- This combined signal is the net desired change for each neuron in the previous layer
-  - It encodes what the previous layer "should have looked like" to produce a better output
-  - Grant: "these desired effects are added together as a list of desired changes to the second-to-last layer"
+- All 10 output neurons have desires, not just the "2" — each broadcasts requests backward
+- "2" wants up, "8" (if incorrectly high) wants down, "0" (already low) barely cares
+- All 10 sets of requests summed together per previous-layer neuron
+- Agreements reinforce; conflicts cancel — strongest combined signal wins
+- Sum = the net desired change for each neuron in the previous layer
 
 ---
 
@@ -206,21 +165,11 @@ Like a military after-action review that traces backward through the chain of co
 
 **Speaker notes:**
 
-- This is the recursive insight that makes backpropagation elegant
-  - You started at the output: "what do the output neurons want?"
-  - That told you what the last hidden layer should have done
-  - Now treat that layer the same way: "what do these neurons want from the layer before them?"
-  - Same three levers: adjust biases, adjust weights, propagate desires backward
-- Repeat layer by layer until you reach the input
-  - At the input layer, there is nothing further to propagate — those are the raw pixels, fixed by the training image
-  - But by this point, you have computed a desired adjustment for every weight and bias in the network
-  - That set of adjustments is the gradient — what Chapter 2 called "the list of 13,002 numbers"
-- The military after-action review analogy works perfectly here:
-  - Output = mission result (pass or fail)
-  - Each layer backward = each echelon in the chain of command
-  - "Who made this decision? What intel did they base it on? Who provided that intel?"
-  - Each link gets feedback — "next time, do this differently"
-  - The entire chain gets adjusted simultaneously
+- Recursive: output desires → last hidden layer desires → layer before that → ... → input
+- Same three levers at each layer: adjust biases, adjust weights, propagate desires backward
+- Stops at input layer (raw pixels are fixed)
+- End result: desired adjustment for every weight and bias = the gradient (13,002 numbers)
+- After-action review analogy: trace blame backward through chain of command, adjust each link
 
 ---
 
@@ -243,20 +192,10 @@ Each training example is like one witness to an event. Any single witness might 
 
 **Speaker notes:**
 
-- Critical point: one training example does not give you the full picture
-  - The image of a 2 creates one set of desired adjustments
-  - Those adjustments are great for that specific 2 — but potentially harmful for other digits
-  - The image wants the "8" pathway weakened, but of course actual 8s need that pathway strong
-- The solution: average across many training examples
-  - Show the network hundreds or thousands of images
-  - Compute the desired adjustments (the gradient) for each one
-  - Average all those gradients together
-  - The conflicting signals cancel out — the shared, useful patterns survive
-- This is the bridge between backpropagation and gradient descent:
-  - Backpropagation computes the gradient for one example
-  - You do it for many examples and average
-  - Gradient descent takes a step in the direction of that averaged gradient
-  - Repeat
+- One example's gradient is biased toward that specific image — potentially harmful to other digits
+- Solution: average gradients across many training examples
+- Conflicting signals cancel out; shared useful patterns survive
+- Bridge: backprop computes gradient for one example → average many → gradient descent steps in that direction
 
 ---
 
@@ -279,25 +218,12 @@ Each training example is like one witness to an event. Any single witness might 
 
 **Speaker notes:**
 
-- This is where theory meets practice
-  - In theory, you compute the gradient from all 60,000 training images, average them, and take one perfect step
-  - In practice, that is one gradient computation = one step — absurdly expensive
-  - For modern datasets with billions of examples, it would be computationally impossible
-- Stochastic gradient descent (SGD) is the universal solution:
-  - Randomly shuffle the training data
-  - Grab a mini-batch of about 100 images
-  - Run backpropagation on each, average the gradients, take one step
-  - Grab another 100, repeat
-- Each step is approximate — it uses a sample, not the full dataset
-  - Like political polling — a random sample of 100 is noisy but reveals the trend
-  - Some steps point slightly in the wrong direction
-  - But on average, the trend is downhill
-- Grant's analogy: the drunk man vs. the careful man
-  - The drunk man (SGD) takes wobbly, imperfect steps but moves fast
-  - The careful man (full-batch) takes perfect steps but moves agonizingly slowly
-  - The drunk man reaches the bottom first
-- This is how every AI model you have heard of was trained
-  - Same fundamental loop: mini-batch, backpropagation, gradient, step, repeat
+- Full-batch gradient: process all 60,000 images per step — computationally impossible at scale
+- SGD: shuffle, grab mini-batch (~100), backprop each, average gradients, step, repeat
+- Each step is approximate (sample, not full dataset) but fast
+- Like polling: random sample of 100 is noisy but reveals the trend
+- Drunk man (SGD, fast wobbly steps) beats careful man (full-batch, slow precise steps) to the bottom
+- Every AI model trained this way: mini-batch → backprop → gradient → step → repeat
 
 ---
 
@@ -316,25 +242,12 @@ Each training example is like one witness to an event. Any single witness might 
 
 **Speaker notes:**
 
-- Everything we have described — cost function, backpropagation, gradient descent — requires training data
-  - Labeled training data: images paired with the correct answer
-  - The cost function cannot measure "how wrong" the network is unless you know what "right" looks like
-- MNIST is the classic dataset:
-  - 60,000 training images of handwritten digits (0-9)
-  - Each one labeled by a human
-  - Grant calls it the gold standard benchmark for testing new ideas
-- The bigger picture:
-  - For language models like GPT, the "label" is the next word — already present in the text itself
-  - That is why language models can train on the entire internet — the data is self-labeling
-  - But for supervised tasks like digit recognition, someone has to manually label each example
-- Quality matters as much as quantity
-  - Mislabeled data teaches the network wrong things
-  - Biased data produces biased networks
-  - The training data defines what the network can learn — garbage in, garbage out
-- This is often the real bottleneck in AI projects
-  - The algorithms are well understood
-  - The architectures are published
-  - Getting enough high-quality, correctly labeled data is the hard part
+- Cost function requires labeled data — can't measure "how wrong" without knowing "right"
+- MNIST: 60,000 hand-labeled digit images (0-9)
+- Language models: the "label" is the next word (self-labeling from raw text) — why they can train on the whole internet
+- Supervised tasks (digit recognition) need manual labeling per example
+- Quality matters: mislabeled data teaches wrong things; biased data → biased network
+- Often the real bottleneck in AI: algorithms are published, data is the hard part
 
 ---
 
@@ -362,25 +275,10 @@ This loop — forward pass, cost, backpropagation, gradient, step, repeat — is
 
 **Speaker notes:**
 
-- The complete learning loop, end to end:
-  1. **Forward pass** — feed data through the network, compute the output
-  2. **Cost** — measure how wrong the output is
-  3. **Backpropagation** — trace the error backward through the layers, compute the gradient
-  4. **Gradient** — a list of 13,002 numbers telling you which direction to adjust each parameter
-  5. **Step** — nudge each parameter a small amount in the downhill direction
-  6. **Repeat** — grab the next mini-batch and do it all again
-- This is the engine of all AI learning
-  - The same loop powers digit recognizers, image generators, language models, self-driving cars
-  - The architecture changes, the scale changes, but the learning loop is identical
-- Key takeaway for this audience:
-  - AI is not magic — it is a systematic process of measuring errors and making small corrections
-  - Like training any skill: try, fail, figure out what went wrong, adjust, try again
-  - The network does this millions of times per training run, automatically
-- With Chapters 2 and 3 together, you now understand the complete learning process
-  - How errors are measured (cost function)
-  - How the direction of improvement is computed (backpropagation)
-  - How parameters are updated (gradient descent)
-  - How training scales to large datasets (stochastic gradient descent)
+- Complete loop: forward pass → cost → backprop → gradient → step → repeat with next mini-batch
+- Same loop powers everything: digit recognizers, image generators, LLMs, self-driving cars
+- AI is not magic — systematic: measure error, compute gradient, take a step, repeat millions of times
+- Chs 2+3 together cover: cost function, backpropagation, gradient descent, SGD — the full learning process
 
 ---
 

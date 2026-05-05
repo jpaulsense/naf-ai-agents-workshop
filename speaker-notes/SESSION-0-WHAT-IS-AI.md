@@ -36,13 +36,11 @@
 
 **Speaker notes:**
 
-> Welcome everyone. Before we build anything with AI this afternoon, we're going to spend two hours understanding what it actually is. Not the hype you see in headlines, not the fear, not the sci-fi — the actual mechanics of how this technology works.
->
-> By the end of this session, you're going to understand more about how AI works than 99% of the people who use ChatGPT every day. And that understanding is going to make everything we do this afternoon — when we start building AI agents — click in a way it wouldn't otherwise.
->
-> A lot of the concepts and examples I'll be using today come from a YouTube channel called 3Blue1Brown, run by a guy named Grant Sanderson. He's one of the best explainers of math and AI on the internet — his videos on this topic have been watched over 30 million times. I've taken his key concepts and examples and built them into this presentation, adapted for this audience. If you want to go deeper on any of this after today, his channel is an incredible resource.
->
-> Fair warning: you will NOT need any math background for this. If at any point you see a formula on a slide and your eyes glaze over — ignore it and listen to the explanation. The concepts are what matter, not the notation.
+- Two hours on how AI actually works — mechanics, not hype
+- Goal: understand more than 99% of ChatGPT users by end of session
+- Foundation for this afternoon's agent-building workshop
+- Source material: 3Blue1Brown (Grant Sanderson) — 30M+ views on deep learning series
+- No math background needed — ignore notation, listen for concepts
 
 ---
 
@@ -54,13 +52,12 @@
 
 **Speaker notes:**
 
-> Everything we're about to cover for the next two hours comes back to this one slide. AI is not magic. It is not sentient. It is not "thinking" the way you and I think. At its core, AI is a mathematical function — a machine that takes in numbers, does a bunch of math, and spits out numbers.
->
-> The thing that makes it special — the thing that makes it different from a regular computer program — is that a human didn't write the rules. Instead, the machine figured out its own rules by looking at millions of examples.
->
-> That black box in the middle? It contains thousands — or in the case of ChatGPT, *billions* — of adjustable numbers called parameters. With random parameters, the function is useless garbage. But with the *right* parameters, it can recognize your face, understand your voice, write code, or have a conversation.
->
-> Our job for the next two hours is to open that black box. We're going to understand what's inside, and how it gets set up. Let's start with the building blocks.
+- AI = mathematical function. Numbers in, numbers out.
+- Not magic, not sentient — learned parameters define behavior
+- Key difference from traditional code: machine learns its own rules from examples
+- Random parameters = garbage. Right parameters = useful output.
+- 13,002 parameters in our example network; 175B in GPT-3
+- Our job: open the black box and understand what's inside
 
 ---
 
@@ -81,17 +78,11 @@ Recognizing digits is incredibly easy for your brain to do, but almost impossibl
 
 **Speaker notes:**
 
-- Show messy handwritten 3s on screen — audience recognizes them instantly
-  - Same concept, wildly different pixel values each time
-  - The light-sensitive cells firing in your eye are completely different for each one, but your brain resolves them as the same idea
-- Now try to *program* that with traditional if/then rules
-  - "Two curves stacked, open to the left" — but what counts as a curve? How curvy? What about sharp-angled 3s?
-  - Every rule has a hundred exceptions, and the exceptions have exceptions
-- This is the problem **neural networks** were invented to solve
-  - Tasks that are trivial for human brains but impossible to code with rules: images, speech, handwriting
-- The core insight of **machine learning**: don't *tell* the computer the rules — *show* it thousands of examples and let it figure out the rules on its own
-- Running example for this section: handwritten digit recognition (28×28 pixel images)
-  - The "hello world" of AI — simple enough to understand, contains every concept that scales up to ChatGPT
+- Messy 3s on screen — audience recognizes instantly, but pixel values wildly different each time
+- Traditional if/then rules fail: every rule has a hundred exceptions
+- Neural networks solve tasks trivial for brains but impossible to code with rules
+- Core ML insight: don't write rules — show examples, let machine learn rules
+- Running example: 28x28 pixel handwritten digits — "hello world" of AI, scales to ChatGPT
 
 ---
 
@@ -109,14 +100,10 @@ Recognizing digits is incredibly easy for your brain to do, but almost impossibl
 
 **Speaker notes:**
 
-- Forget biology — an AI neuron is NOT a brain cell
-  - It's just a container that holds a number between 0 and 1
-- The term for that number: **activation**
-  - Dimmer switch analogy — not on/off, it's a range
-  - 0 = off, 1 = fully lit, anything in between
-- That's it — a neuron is a box with a number in it
-  - Everything AI does — ChatGPT, image generation, recommendations — comes from networks of these simple number-holders interacting
-  - The magic isn't in any single neuron, it's in how they're connected
+- AI neuron = NOT a brain cell. Just a container holding a number between 0 and 1.
+- That number = "activation." Dimmer switch, not on/off toggle.
+- All of AI (ChatGPT, image gen, etc.) = networks of these simple number-holders
+- Magic is in the connections, not any single neuron
 
 ---
 
@@ -140,27 +127,13 @@ Think of it like a military chain of command. The front line (input) collects ra
 
 **Speaker notes:**
 
-- **Input layer**: 784 neurons — one per pixel in 28×28 image
-  - Each holds pixel brightness (0 = black, 1 = white)
-  - Just raw data, nothing fancy
-- **Hidden layers**: two layers of 16 neurons each
-  - Why 16? Somewhat arbitrary — the specific number matters less than the concept
-  - These are the "thinking" layers
-- **Output layer**: 10 neurons, one per digit (0–9)
-  - Brightest neuron = the network's answer
-  - "3" neuron at 0.95, everything else below 0.1 → network says "that's a 3"
-- The hope for what hidden layers learn — **hierarchical decomposition**:
-  - Layer 1 detects simple features: edges, small line segments, corners
-  - Layer 2 combines edges into patterns: loops, vertical lines, crossbars
-  - Output maps patterns → digits
-- Specific digit examples (good for audience):
-  - A 9 = loop on top + line on the right
-  - An 8 = loop on top + another loop on the bottom
-  - A 4 = three specific lines
-  - Key caveat: "whether or not the network *actually* learns it this way is another question" — but this is the hope
-- Same hierarchical pattern applies beyond images:
-  - Speech: raw audio → distinct sounds → syllables → words → phrases → abstract thoughts
-  - Military analogy: front line collects raw intel, middle echelons analyze, top makes the call
+- Input: 784 neurons (28x28 pixels), each holds brightness 0-1
+- Hidden: two layers of 16 neurons — the "thinking" layers
+- Output: 10 neurons (digits 0-9); brightest = the answer
+- Hierarchical decomposition: Layer 1 = edges/corners, Layer 2 = loops/patterns, Output = digit classification
+- Examples: 9 = loop + right line; 8 = two loops; 4 = three lines
+- Caveat: whether network actually learns this hierarchy is uncertain — but it's the hope
+- Same pattern in speech: audio → sounds → syllables → words → meaning
 
 ---
 
@@ -182,20 +155,11 @@ Weights are where the "knowledge" lives. A trained network isn't a program — i
 
 **Speaker notes:**
 
-- A **weight** = a number on each connection between neurons
-  - Volume knob analogy — controls how much influence one neuron has on the next
-  - Positive weight: "if you light up, I should too"
-  - Negative weight: "if you light up, I should stay quiet"
-  - Size of weight = strength of influence
-- Edge detection example — visualize weights as a pixel grid:
-  - Positive weights (green/blue) on pixels where the edge should be
-  - Negative weights (red) on surrounding pixels
-  - Why negative? You want to detect a *pattern*, not just brightness — "the sum is largest when the middle pixels are bright but surrounding pixels are darker"
-  - You can literally *see* what a neuron is looking for by arranging its weights into a 28×28 grid
-- Scale: every neuron connects to *every* neuron in the next layer
-  - 784 × 16 = 12,544 connections in just the first layer
-  - Total across the whole network: **13,002 adjustable parameters** (weights + biases)
-  - Those 13,002 numbers *are* the network — they define everything it knows
+- Weight = volume knob on each connection. Positive = excite, negative = inhibit, size = strength.
+- Edge detection example: positive weights where edge should be, negative on surrounding pixels
+- Can visualize what a neuron looks for by arranging its 784 weights into a 28x28 grid
+- Every neuron connects to every neuron in next layer: 784 x 16 = 12,544 connections in first layer alone
+- Total: 13,002 parameters (weights + biases) — those numbers ARE the network
 
 ---
 
@@ -213,23 +177,11 @@ Weights are where the "knowledge" lives. A trained network isn't a program — i
 
 **Speaker notes:**
 
-- Every neuron does the same 4-step computation:
-  1. **Multiply** each incoming activation by its connection weight
-  2. **Add** all those products together → the **weighted sum**
-  3. **Add a bias** — a threshold that controls how strong the signal needs to be before the neuron cares
-  4. **Squish** the result into the 0–1 range using an **activation function**
-- **Bias** explained:
-  - Weights tell you *what pattern* the neuron looks for
-  - Bias tells you *how strong the match needs to be* before the neuron fires
-  - Grant's phrasing: "how high the weighted sum needs to be before the neuron starts getting meaningfully active"
-- **Activation functions** — two to name:
-  - **Sigmoid function** (original): smoothly squishes any number into 0–1 range
-    - Very negative → near 0, very positive → near 1
-    - Grant calls it the "sigmoid squishification function"
-  - **ReLU** (Rectified Linear Unit) — what modern networks use
-    - Dead simple: negative → 0, positive → pass through unchanged
-    - Why the switch? Sigmoid gets flat at extremes, so training gets stuck. ReLU never flattens.
-- Bottom line: this one simple operation — multiply, sum, bias, squish — repeated thousands of times across layers, produces all the complex behavior in AI
+- 4 steps: multiply inputs by weights → sum → add bias → squish into 0-1
+- Weights = what pattern to look for. Bias = how strong the match must be to fire.
+- Sigmoid: original activation function, smoothly squishes to 0-1. Grant: "squishification function"
+- ReLU: modern replacement. Negative → 0, positive → unchanged. Avoids sigmoid's flat extremes.
+- This one operation repeated thousands of times = all AI behavior
 
 ---
 
@@ -248,18 +200,11 @@ There is nothing mystical here. A neural network is a mathematical function with
 
 **Speaker notes:**
 
-- Key demystification moment — make this land:
-  - A neural network is a **mathematical function**. Full stop.
-  - 784 numbers in (pixels) → math in the middle → 10 numbers out (digit probabilities)
-  - Can be written compactly: **σ(W·a + b)** — weight matrix × activations + biases, squished
-  - This is why GPUs matter: matrix multiplication is massively parallelizable, and "many libraries optimize the heck out of matrix multiplication" (Grant's words)
-- 13,002 **parameters** (weights + biases) = everything the network knows
-  - Random parameters → complete garbage output
-  - *Right* parameters → 98% accuracy on handwriting
-- Humans design the **architecture** (layers, connections, activation functions)
-  - The machine learns the **parameter values** from data
-- Reassuring complexity: "if it were any simpler, what hope would we have that it could take on the challenge?" (Grant)
-- Bridge to next section: "learning" = finding the right settings for all 13,002 knobs → that's **gradient descent**, coming up next
+- Demystification: neural network = mathematical function. 784 in → 10 out. Period.
+- Compact notation: sigma(W*a + b). GPUs matter because matrix multiply is parallelizable.
+- Random parameters = garbage. Right parameters = 98% accuracy.
+- Humans design architecture; machine learns parameter values from data.
+- Next: how do we find the right 13,002 settings? That's gradient descent.
 
 ---
 
@@ -282,15 +227,12 @@ The cost function is like an exam score — but inverted. Zero is perfect. The h
 
 **Speaker notes:**
 
-> OK, so we have 13,002 knobs and dials, and we need to find the right settings. But before we can improve the network, we need a way to measure how bad it currently is. That's what the cost function does.
->
-> Here's how it works. You show the network an image of a 3. With random parameters, the output is garbage — maybe the "3" neuron has an activation of 0.2, but the "8" neuron is at 0.6, and the "5" neuron is at 0.4. That's terrible. The ideal output would be 1.0 for "3" and 0.0 for everything else.
->
-> To measure how wrong this is, you take the difference between each output neuron's actual activation and what it *should* be, square those differences (so negatives become positive and big errors get amplified), and add them all up. That gives you the cost for this one training example.
->
-> Now do that for every image in your training set — tens of thousands of labeled handwritten digits — and average all those individual costs together. That average is a single number that tells you how well or poorly the network is performing overall. The lower the cost, the better the network is doing.
->
-> Think of it like an inverted exam score. Zero means perfect — the network got everything right. A high number means it's confused and making lots of mistakes. Our goal is to find values for those 13,002 parameters that make this cost as small as possible. And that brings us to the most important algorithm in all of AI.
+- Before improving, need to measure how bad: that's the cost function
+- Show image of 3: ideal output = 1.0 for "3", 0.0 for everything else
+- Cost = sum of squared differences between actual and ideal activations
+- Average cost across all training images = single "grade" for the network
+- Inverted score: 0 = perfect, high = confused
+- Goal: find 13,002 parameter values that minimize this cost
 
 ---
 
@@ -312,17 +254,12 @@ The cost function is like an exam score — but inverted. Zero is perfect. The h
 
 **Speaker notes:**
 
-> This is gradient descent, and it is the single most important algorithm in modern AI. Every AI model you've ever heard of — ChatGPT, Claude, Midjourney, self-driving cars, voice assistants — all learned through some version of this algorithm.
->
-> Here's the intuition. Imagine the cost function as a physical landscape — hills, valleys, slopes, ridges. The elevation at any point represents the cost — how wrong the network is — for a particular set of parameter values. High elevation = high cost = bad performance. Low elevation = low cost = good performance.
->
-> When you initialize a network with random parameters, you start at a random location in this landscape — probably somewhere up on a hill. The goal is to get to the lowest valley. But you can't see the landscape — you're blindfolded. All you can do is feel the ground under your feet and figure out which direction slopes downward.
->
-> That's gradient descent. You compute the gradient — which tells you the direction of steepest *uphill* — and then you go the opposite direction. You take a small step downhill. Then you compute the gradient again from your new position. Take another small step. Repeat. Thousands, millions, billions of times. Eventually, you settle into a valley — a set of parameter values where the cost is low and the network performs well.
->
-> One important subtlety: there's no guarantee you find the *deepest* valley. You might end up in a local minimum — a valley that's not the absolute best, but is still pretty good. In practice, this turns out to be fine for most real-world applications. The valleys you find are usually good enough.
->
-> The step size matters too. If your steps are too big, you might overshoot the valley and bounce back and forth. If your steps are too small, training takes forever. The step size is controlled by something called the **learning rate**. And there's a nice built-in feature: if you make your step size proportional to the steepness of the slope, you naturally take smaller steps as you approach the bottom of a valley, reducing the risk of overshooting.
+- Most important algorithm in all of AI — every model uses some version
+- Intuition: cost function as landscape. Elevation = error. Goal = find lowest valley.
+- Start at random position (random params). Blindfolded — can only feel local slope.
+- Compute gradient (steepest uphill direction) → step opposite way → repeat billions of times
+- No guarantee of finding the deepest valley (local minima) — but usually good enough in practice
+- Learning rate = step size. Too big = overshoot. Too small = slow. Proportional to slope = natural deceleration near bottom.
 
 ---
 
@@ -342,17 +279,11 @@ The cost function is like an exam score — but inverted. Zero is perfect. The h
 
 **Speaker notes:**
 
-> Let me make the gradient more concrete, because it's one of those terms that sounds intimidating but is actually simple.
->
-> Remember, our network has 13,002 parameters — weights and biases. The gradient is just a list of 13,002 numbers, one for each parameter. Each number in the gradient tells you two things:
->
-> First, the **sign** — positive or negative — tells you which direction to nudge that parameter. Positive means "this parameter should go down to reduce cost." Negative means "this parameter should go up."
->
-> Second, the **size** of the number tells you how sensitive the cost is to that parameter. If one gradient component is 3.2 and another is 0.1, that means the cost is 32 times more sensitive to the first parameter. A small change to the first weight makes a big difference; a small change to the second barely matters.
->
-> So the gradient isn't just saying "go downhill." It's a ranked priority list: "Here are the 13,002 knobs. Here's exactly which direction to turn each one, and here's how important each one is relative to the others." It tells you which changes will give you the most bang for your buck.
->
-> Now, the question is: how do you actually compute this gradient? How do you figure out, for each of those 13,002 parameters, how it affects the final cost? That's where backpropagation comes in.
+- Gradient = list of 13,002 numbers, one per parameter
+- Sign tells direction: positive → decrease this param, negative → increase it
+- Magnitude tells sensitivity: 3.2 vs 0.1 means first param is 32x more impactful
+- Gradient = ranked priority list of which knobs matter most and which way to turn them
+- Next question: how to compute it efficiently? That's backpropagation.
 
 ---
 
@@ -376,21 +307,13 @@ Like an after-action review. The mission failed (high cost). You trace backward 
 
 **Speaker notes:**
 
-> Backpropagation is the algorithm that computes the gradient efficiently. The name literally describes what it does: it propagates errors *backward* through the network.
->
-> Let's walk through it. Say you show the network an image of a 2, and the output is wrong — the "2" neuron is barely active, and the "8" neuron is lit up. Clearly, some things need to change.
->
-> You start at the output and work backward. The "2" neuron should be higher and the "8" neuron should be lower. OK — so what feeds into those output neurons? Neurons in the last hidden layer, through weighted connections. For each connection, you can figure out: "If I tweaked this weight a little bit, how much would it help?"
->
-> Here's the key insight Grant makes in his videos: the adjustments should be **proportional to the activations**. If a neuron in the previous layer had a high activation — 0.9, say — then the weight on that connection has a lot of leverage. A small change to that weight creates a big change in the output. But if the previous neuron had an activation of 0.01, the weight barely matters — tweaking it does almost nothing. So you make bigger adjustments to weights connected to highly active neurons.
->
-> This connects to something from neuroscience called Hebbian theory — "neurons that fire together wire together." The strongest learning happens along the connections between neurons that are both active. It's a nice parallel between artificial and biological neural networks.
->
-> But you don't just adjust weights — you also figure out what the *previous layer's activations* should have been. "The '2' output neuron would be better if this hidden neuron were brighter and that one were dimmer." Those desired changes get propagated backward to the previous layer, where the same process repeats. Layer by layer, backward through the network, assigning blame and computing corrections.
->
-> Think of it like a military after-action review. The mission failed — that's your cost. You trace backward through the chain of command: "Who made the final call? What intel were they working from? Where did that intel come from? Was the original data collection flawed, or was the analysis wrong?" Each link in the chain gets evaluated, and adjustments get made for next time.
->
-> One more subtlety: a single training image — like one picture of a "2" — creates one set of desired adjustments. But those adjustments are biased toward that specific example. The picture of a 2 might say "make the '8' neuron quieter!" but a picture of an 8 would say the opposite. You need to average the desired adjustments across many examples to find a direction that's good for the overall dataset, not just one image. Which brings us to training at scale.
+- Backpropagation = propagate errors backward through the network to compute gradient
+- Start at output: "2" neuron too low, "8" too high → what weights caused this?
+- Key: adjustments proportional to activations. High activation = high leverage weight.
+- Hebbian parallel: "neurons that fire together wire together"
+- Also propagates desired activation changes backward — layer by layer assigning blame
+- After-action review analogy: trace backward through chain of command
+- Single example gives biased adjustments — need to average across many examples
 
 ---
 
@@ -409,17 +332,12 @@ Modern AI models train on billions of examples. GPT-3 was trained on roughly 300
 
 **Speaker notes:**
 
-> So here's the practical reality. You don't process one image at a time — that would be too noisy, too biased toward individual examples. But you also don't process your entire training set at once — that would be astronomically expensive to compute.
->
-> The practical solution is called **stochastic gradient descent**. You grab a random mini-batch — say, 100 images — compute the gradient for each one, average those gradients together, and take one step in that average direction. Then you grab another random 100, compute, average, step. Repeat millions of times.
->
-> Grant Sanderson uses a great analogy for this: it's like "a drunk man stumbling aimlessly down a hill but taking quick steps, rather than a carefully calculating man who takes slow, deliberate steps downhill." Each individual step is a little random, a little noisy. But the overall trend is downhill, and you get there much faster because each step is so cheap to compute.
->
-> It's like political polling. You don't survey every person in the country — that's too expensive. You poll random samples of a few hundred people. Each poll is a little noisy, but the trends emerge, and you can run polls much more frequently.
->
-> Now let's talk about scale. The handwritten digit network we've been discussing has 13,002 parameters and trains on about 60,000 images. That's cute. GPT-3 — the model that powers ChatGPT — has 175 *billion* parameters. It was trained on approximately 300 *billion* tokens of text — books, websites, code, Wikipedia, scientific papers. Each one of those 300 billion tokens contributed a tiny nudge to those 175 billion parameters through exactly the same process we just described — cost function, gradient, backpropagation, step. The same algorithm. Just at a mind-boggling scale.
->
-> And that's the foundation. You now understand how neural networks learn. Measure how wrong you are (cost function), figure out which direction to adjust (gradient via backpropagation), take a step, and repeat. Let's take a 10-minute break, and when we come back, we'll see how this same idea applies to language.
+- Stochastic gradient descent: random mini-batch (~100 examples), average gradients, step, repeat
+- Grant's analogy: "drunk man stumbling down a hill taking quick steps" vs careful slow steps — noisy but fast
+- Polling analogy: sample hundreds, not millions — noisy per sample but trends emerge
+- Scale: digit network = 13,002 params, 60K images. GPT-3 = 175B params, 300B tokens. Same algorithm.
+- Foundation complete: cost function → gradient → backprop → step → repeat
+- Break, then applying this to language
 
 ---
 
@@ -447,19 +365,10 @@ Everything we just learned applies:
 
 **Speaker notes:**
 
-> Welcome back. So far, everything we've covered has used image recognition as the example — feeding in pixel values and classifying digits. But the AI that's dominating headlines right now — ChatGPT, Claude, Gemini — works with *language*, not images.
->
-> Here's the good news: everything changes, and nothing changes. The fundamental concepts are identical:
-> - Neurons are still just numbers
-> - Layers still stack for hierarchical processing
-> - Weights are still learned via gradient descent and backpropagation
-> - The cost function still measures "how wrong was the prediction"
->
-> What changes is the *architecture* — the specific way the layers are arranged — and the *input format*. Instead of pixel brightness values, we're feeding in text. The architecture that makes this work is called the **Transformer**, and the family of models built on it are called GPTs.
->
-> Let's break down that acronym. GPT stands for Generative Pre-trained Transformer. **Generative** means it produces new text — it doesn't just classify, it creates. **Pre-trained** means it learned from a massive dataset before you ever touched it — all those billions of gradient descent steps happened before the product launched. **Transformer** is the specific neural network architecture — the arrangement of layers and connections — that made this breakthrough possible. It was introduced in a 2017 paper from Google titled "Attention Is All You Need," which might be the most consequential machine learning paper ever published.
->
-> Now let's walk through how text actually gets processed by one of these models.
+- Same fundamentals: neurons, layers, weights, gradient descent, cost function
+- What changes: architecture (Transformer) and input format (text instead of pixels)
+- G = Generative (produces new text). P = Pre-trained (learned before deployment). T = Transformer (the architecture).
+- Transformer from 2017 Google paper "Attention Is All You Need" — most consequential ML paper ever
 
 ---
 
@@ -477,13 +386,11 @@ Everything we just learned applies:
 
 **Speaker notes:**
 
-> Neural networks only understand numbers, so the first step is converting text into numbers. The way this works is through **tokenization** — breaking text into chunks called tokens.
->
-> Tokens are usually whole words, but not always. Common words like "the" or "and" are single tokens. Longer or less common words get split into pieces. The word "cleverest" might become three tokens: "cle" + "ver" + "est." This is practical — it keeps the vocabulary manageable while still being able to handle any text you throw at it.
->
-> GPT-3 has a vocabulary of about 50,257 tokens. Each one has a unique ID number. So when you type a sentence into ChatGPT, the first thing that happens is your text gets chopped into tokens, and each token gets replaced by its ID number. From that point forward, the model never sees your text — it only works with these numbers.
->
-> There's also a limit on how many tokens the model can process at once — this is called the **context window**. For GPT-3, it was 2,048 tokens. Modern models like GPT-4 and Claude can handle much more — 100,000 tokens or more. But the concept is the same: there's a fixed window of text the model can "see" at once.
+- Neural nets need numbers — tokenization converts text to numeric IDs
+- Common words = one token. Uncommon/long words split into pieces ("cle" + "ver" + "est")
+- GPT-3 vocabulary: ~50,257 tokens, each with unique ID
+- Model never sees raw text — only numeric token IDs
+- Context window = max tokens at once. GPT-3: 2,048. Modern models: 100K+.
 
 ---
 
@@ -504,15 +411,11 @@ The embedding isn't programmed by humans. The network *learns* which numbers to 
 
 **Speaker notes:**
 
-> This is where it starts to get really fascinating. Each token — each word or word piece — needs to be represented as a list of numbers the network can work with. That list is called an **embedding**, and it's looked up in a giant table called the embedding matrix.
->
-> For GPT-3, each token gets mapped to a list of 12,288 numbers. That's a vector — a point in 12,288-dimensional space. I know that's impossible to visualize — we live in 3 dimensions, and our brains can kind of handle 2D plots. But mathematically, it works the same way.
->
-> Now here's what's remarkable: the network *learns* these embeddings during training. Nobody programs them. Nobody tells the model "put 'king' here and 'queen' there." The embeddings start as random numbers, and through billions of gradient descent steps, they self-organize into a structure where words with similar meanings end up close together in this 12,288-dimensional space.
->
-> "King" and "queen" end up nearby. "Cat" and "kitten" end up nearby. "Cat" and "refrigerator" are far apart. "Happy" and "joyful" are close; "happy" and "miserable" are far. This structure emerges entirely from the training data — from the model reading billions of sentences and learning which words appear in similar contexts.
->
-> The embedding matrix for GPT-3 has about 618 million parameters — 50,257 tokens × 12,288 dimensions. That's over half a billion numbers just to convert words into vectors, and that's less than half a percent of the model's total 175 billion parameters. The real work happens in the layers that come next.
+- Each token → embedding vector of 12,288 numbers (GPT-3). A point in high-dimensional space.
+- Embeddings learned during training — not programmed by humans
+- Similar meanings cluster together: king/queen close, cat/refrigerator far apart
+- Structure emerges from billions of training examples — words in similar contexts converge
+- Embedding matrix: 50,257 x 12,288 = ~618M params. Less than 0.5% of GPT-3's total.
 
 ---
 
@@ -537,17 +440,12 @@ The embedding isn't programmed by humans. The network *learns* which numbers to 
 
 **Speaker notes:**
 
-> This is probably the most mind-blowing result in all of machine learning, and it's worth spending a minute on.
->
-> Take the vector for "woman" and subtract the vector for "man." What you get is a direction in 12,288-dimensional space that represents the concept of gender — or more precisely, the female-vs-male axis. Now take the vector for "king" and add that gender direction. Where do you land? Very close to "queen."
->
-> It works for other pairs too. Take "uncle," add the same gender direction, and you land near "aunt." Take "brother," add the direction, and you get "sister." The model has discovered that there's a *direction* in its embedding space that means gender, and it consistently applies across all the word pairs where gender is a distinguishing factor.
->
-> And it's not just gender. Take "Italy" minus "Germany" — that gives you a direction that represents something like "Italian-ness vs. German-ness." Now take "Hitler" — a figure associated with Germany — and add the Italy direction. You land near "Mussolini." The model has encoded nationality and historical role as separate directions, and you can combine them.
->
-> There's even a direction for plurality. Take "cats" minus "cat" — that difference vector, when you compute dot products with other words, gives higher values for plural nouns than singular ones. And here's a fun detail from the 3Blue1Brown video: if you take that plurality direction and compute its dot product with the words "one," "two," "three," "four," you get *increasing values*. The model has learned that "four" is more plural than "one."
->
-> Nobody programmed any of this. Nobody labeled "king" as "male, royal, singular." The model discovered these abstract concepts from reading text — from billions of sentences where "king" appears in similar contexts to "queen" and "ruler" and "monarch," and different contexts from "peasant" or "bicycle." The structure of human language, the relationships between concepts — it's all encoded as geometry in this high-dimensional space.
+- "woman" - "man" = gender direction. "king" + gender direction = near "queen"
+- Same direction: uncle → aunt, brother → sister. Consistent across all gendered pairs.
+- "Italy" - "Germany" + "Hitler" = near "Mussolini" — nationality/role as separate directions
+- Plurality direction: "cats" - "cat" dot-producted with "one","two","three","four" gives increasing values
+- Nobody programmed this — model discovered abstract concepts from reading billions of sentences
+- Language relationships encoded as geometry in 12,288-dimensional space
 
 ---
 
@@ -568,19 +466,12 @@ The embedding isn't programmed by humans. The network *learns* which numbers to 
 
 **Speaker notes:**
 
-> Here's the core insight about how these models work, and it surprises almost everyone when they first hear it. The entire model — all 175 billion parameters, all of the sophisticated architecture we're about to discuss — is trained to do one thing: predict the next word.
->
-> That's it. Given a sequence of text, the model outputs a probability distribution over its entire vocabulary — about 50,000 options — and each one gets a probability. "The capital of France is ___" — "Paris" might get 68%, "a" might get 4%, "the" might get 3%, and so on down the line.
->
-> Grant uses a nice example: if the text includes "Harry Potter" and mentions "least favorite" before the word "Professor," the model assigns a very high probability to "Snape." It's learned from the training data that this is the most likely completion.
->
-> Text generation works by sampling from this distribution. The model picks one token — weighted by the probabilities — appends it to the text, and then predicts the next one. Over and over. That's how ChatGPT produces entire paragraphs: one word at a time, each word chosen based on everything that came before it.
->
-> There's a parameter called **temperature** that controls how random the sampling is. Low temperature makes the model conservative — it almost always picks the highest-probability token. High temperature makes it more creative — it's more willing to pick lower-probability options. At temperature zero, it's completely deterministic — always the top choice. This is why sometimes ChatGPT gives you the same answer twice and sometimes it's different — it depends on the temperature setting.
->
-> Now, here's the deep insight: people dismiss this by saying "it's just autocomplete — it's just predicting the next word, like the suggestions on your phone keyboard." And technically, that's true. But think about what it takes to predict well. To complete "The capital of France is ___," you need geography. To complete a legal argument, you need to understand law. To complete a Python function, you need programming logic. To complete "2 + 2 = ___," you need arithmetic. To predict the next word of a Shakespearean sonnet, you need to understand meter, rhyme, and Elizabethan vocabulary.
->
-> The simplicity of the goal — just predict the next word — is profoundly deceptive. To do it well at scale, the model has to learn grammar, facts, logic, common sense, style, tone, and reasoning. All from the simple objective of "what word comes next?"
+- Entire model trained for ONE task: predict the next token
+- Output = probability distribution over ~50K vocabulary. Sample one, append, repeat.
+- Example: "Harry Potter" + "least favorite" + "Professor" → high probability on "Snape"
+- Temperature: low = conservative/deterministic, high = creative/random
+- "Just autocomplete" — technically true, but to autocomplete well you need geography, law, logic, arithmetic, style...
+- Simple goal produces complex capability. Predicting well requires learning everything about the world.
 
 ---
 
@@ -604,19 +495,12 @@ The embedding isn't programmed by humans. The network *learns* which numbers to 
 
 **Speaker notes:**
 
-> Now let's look at the overall architecture — the Transformer. At a high level, it's remarkably simple.
->
-> Tokens come in at the bottom and get converted to embedding vectors — we just covered that. Then those vectors flow upward through a pipeline of alternating blocks: an attention block, then a feed-forward block (also called an MLP or multilayer perceptron), then another attention block, then another feed-forward block. Over and over. GPT-3 repeats this pair 96 times.
->
-> The two block types have different jobs:
->
-> **Attention blocks** are where the words talk to each other. Each word looks at every other word in the sequence and asks "which of you are relevant to my meaning right now?" It then updates its embedding based on the information it gathers. We'll go deep on this in the next block.
->
-> **Feed-forward blocks** (MLPs) process each word independently — no inter-word communication. This is where factual knowledge gets injected. "Is this vector encoding Michael Jordan? If so, add information about basketball." We'll touch on this at the end.
->
-> After 96 rounds of "talk to your neighbors" (attention) and "add knowledge" (MLP), the final vector for the last token in the sequence passes through an **unembedding matrix** — essentially the reverse of the embedding step. This maps the 12,288-dimensional vector back into a list of ~50,000 scores, one per vocabulary token. Then the softmax function turns those scores into probabilities, and the model picks the next word.
->
-> That unembedding matrix is another 618 million parameters. So the embedding and unembedding together account for about 1.2 billion of GPT-3's 175 billion parameters. The remaining 174 billion are in the 96 layers of attention and feed-forward blocks. That's where the real intelligence lives. Let's go look at attention — the mechanism that changed everything.
+- Transformer = alternating blocks: Attention → MLP → Attention → MLP, repeated 96 times (GPT-3)
+- Attention blocks: words talk to each other, update meanings based on context
+- MLP blocks: process each word independently, inject factual knowledge
+- Final vector → unembedding matrix → ~50K scores → softmax → probabilities → next token
+- Embedding + unembedding = ~1.2B params. Remaining 174B in the 96 layers of attention + MLP.
+- Next: attention — the mechanism that changed everything
 
 ---
 
@@ -640,13 +524,12 @@ Also show: "Eiffel **tower**" vs. "miniature **tower**" — same word, very diff
 
 **Speaker notes:**
 
-> Here's the problem that attention solves. When a word first enters the network, it gets its embedding from the lookup table — and it's the same embedding every time, regardless of context. The word "mole" gets the same 12,288 numbers whether it appears in "American shrew mole" (an animal), "one mole of carbon dioxide" (a chemistry unit — 6.022 × 10²³ particles), or "take a biopsy of the mole" (a skin growth). Three completely different meanings, but the initial embedding is identical.
->
-> Grant uses another great example: "Eiffel tower" vs. "miniature tower." The word "tower" starts with the same embedding in both cases. But "Eiffel tower" should evoke Paris, wrought iron, 1,000 feet tall. "Miniature tower" is tiny. The context completely changes what the word means.
->
-> Or think about the word "quill." In a Harry Potter context, it's a writing instrument. In a nature documentary, it's a hedgehog spine. Same word, same initial embedding, completely different meaning.
->
-> The network needs a mechanism for surrounding words to influence each other's meanings — to let "Eiffel" reach over and update "tower" with information about iron, Paris, and enormous height. That mechanism is **attention**, and it's arguably the single most important innovation in modern AI. It's the key idea in that 2017 paper "Attention Is All You Need," and it's what makes Transformers work.
+- Initial embeddings are context-free — "mole" gets same vector regardless of meaning
+- Three meanings of "mole": animal, chemistry unit (6.022x10^23), skin growth — all start identical
+- "Eiffel tower" vs "miniature tower" — same initial embedding, completely different meaning
+- "Quill" in Harry Potter (pen) vs nature doc (hedgehog spine) — same vector, different meaning
+- Attention = mechanism that lets surrounding words update each other's embeddings
+- The key innovation in 2017 "Attention Is All You Need" paper
 
 ---
 
@@ -670,27 +553,15 @@ Imagine a room full of people, each wearing a name tag describing what they know
 
 **Speaker notes:**
 
-> Let me walk you through how attention actually works. I'm going to use a simplified example from Grant's video: the sentence "A fluffy blue creature roamed the verdant forest."
->
-> The goal of attention is to let adjectives like "fluffy" and "blue" update the meaning of the noun they describe — "creature" — so that by the time we're done, the vector for "creature" doesn't just mean "some generic creature" but specifically "a fluffy, blue creature."
->
-> Here's the mechanism. Three learned matrices are involved — **query, key, and value** — each producing a different vector for each word.
->
-> **Queries** represent what a word is *looking for*. Think of nouns generating a query that says "hey, are there any adjectives sitting in front of me?" The query matrix — a set of learned weights — transforms each word's embedding into this question vector.
->
-> **Keys** represent what a word *has to offer*. Adjectives like "fluffy" and "blue" generate keys that essentially say "I'm a descriptor! I have information about properties!" The key matrix transforms embeddings into these answer vectors.
->
-> **The match:** For every pair of words, the model computes a dot product between the query of one word and the key of another. Remember from the embedding discussion — a dot product measures alignment. When a query and key are well-aligned, the dot product is large, meaning "these two words are relevant to each other." When they're not aligned, the dot product is small or negative.
->
-> So "creature"'s query (looking for adjectives) will have a high dot product with "fluffy"'s key (offering adjective information) and "blue"'s key — but a low dot product with "roamed"'s key or "the"'s key.
->
-> These raw scores then go through softmax — the same function from earlier — to normalize them into a distribution that sums to 1. Now each word has a set of attention weights: "I should pay 40% attention to 'fluffy,' 35% to 'blue,' 10% to 'A,' and so on."
->
-> **Values** are the third piece. The value matrix transforms each word into the *actual information* to contribute. "Fluffy"'s value vector encodes the specific meaning to add — not "I'm an adjective" generically, but the particular semantic content of fluffiness. This value vector gets multiplied by the attention weight and added to "creature"'s embedding.
->
-> The result: "creature"'s embedding gets nudged in a direction that incorporates fluffiness and blueness. It's been updated by context.
->
-> Think of it like a networking event. Everyone walks in wearing two badges: a name tag saying what they know (their key), and a lanyard card saying what they're looking for (their query). You scan the room, find the people whose name tags match your needs, and spend the most time talking to them. By the end of the event, your understanding has been enriched by the people you connected with. That's attention.
+- Example: "A fluffy blue creature roamed the verdant forest"
+- Goal: let "fluffy" and "blue" update "creature" so it becomes "a fluffy blue creature"
+- Query = what a word is looking for (nouns ask: "any adjectives near me?")
+- Key = what a word has to offer (adjectives answer: "I'm a descriptor!")
+- Dot product of query x key = relevance score. High = relevant, low = irrelevant.
+- Softmax normalizes scores to sum to 1 — creates attention pattern
+- Value = actual information to contribute. "Fluffy"'s value encodes the semantic content of fluffiness.
+- High-scoring values get added to the word's embedding — updating it with context
+- Networking event analogy: badge = key, lanyard = query, talk to highest-match people
 
 ---
 
@@ -709,19 +580,14 @@ Imagine a room full of people, each wearing a name tag describing what they know
 
 **Speaker notes:**
 
-> What we just described is one attention head — one set of query, key, and value matrices learning one type of relationship. But language has many types of relationships: grammar, pronoun references, semantic similarity, sentiment, logical connections, temporal ordering...
->
-> So the model doesn't run attention once — it runs it 96 times in parallel, with 96 completely separate sets of query, key, and value matrices. Each one is called an **attention head**, and each one learns to look for a different type of relationship.
->
-> One head might learn to connect subjects with their verbs. Another might learn to connect pronouns with the nouns they refer to — figuring out that "it" in "The animal didn't cross the street because it was too tired" refers to "animal," not "street." Another might track whether the text is talking about Harry Potter or Prince Harry — looking at words like "wizard" vs. "Queen" and "Sussex" to disambiguate.
->
-> All 96 heads produce their own suggested updates to each word's embedding, and those updates all get summed together. So each word gets enriched from 96 different perspectives simultaneously.
->
-> And this happens at every one of GPT-3's 96 layers. So the total number of attention operations is 96 heads × 96 layers = 9,216. Each word gets analyzed from over 9,000 different perspectives as it flows through the network. About 58 billion of GPT-3's 175 billion parameters are devoted to attention alone — roughly a third of the entire model.
->
-> One important technical detail: **masking**. When the model is training, it processes entire sequences at once for efficiency. But it can't let the word at position 50 attend to the word at position 51 — that would be letting it see the future, seeing the answer before making the prediction. So all attention scores between a word and any *later* word are forced to zero. This is done by setting those scores to negative infinity before the softmax, which turns them into zeros. The attention pattern ends up looking like a triangle — each word can only attend to words before it.
->
-> Grant makes an important point about why attention succeeded: it's not just that it's a clever mechanism. A big part of its success is that it's "extremely parallelizable" — you can run all the dot products on a GPU simultaneously. This is what enabled the massive scaling that has driven recent AI progress. The mechanism is good, but the ability to make it enormous is what made the breakthrough.
+- One head = one set of Q/K/V matrices learning one relationship type
+- 96 heads in parallel: grammar, pronoun resolution, semantic similarity, sentiment, etc.
+- Example: one head resolves "it" in "animal didn't cross because it was tired" → "animal" not "street"
+- All 96 heads' updates sum together — word enriched from 96 perspectives
+- 96 heads x 96 layers = 9,216 total attention operations per token
+- ~58B params devoted to attention (one-third of GPT-3)
+- Masking: can't attend to future tokens (would be cheating). Scores set to -infinity → triangle pattern.
+- Key success factor: attention is massively parallelizable on GPUs — enabled extreme scaling
 
 ---
 
@@ -744,15 +610,11 @@ Imagine a room full of people, each wearing a name tag describing what they know
 
 **Speaker notes:**
 
-> Let me paint a picture of the transformation that attention and the subsequent layers produce.
->
-> When the word "king" enters the network, its embedding is generic. It means "king" — royalty, ruler, monarchy — but no specific king in any specific context. It's a dictionary definition.
->
-> After flowing through 96 layers of attention and feed-forward processing, that same vector might encode something like: "a fictional Scottish king who murdered his predecessor to seize the throne, described in a play written around 1606, and the text is currently building toward the psychological consequences of that act." All of that is packed into 12,288 numbers — the same vector that started as just "king."
->
-> Grant gives another powerful example: imagine a mystery novel. The very last word of the text so far is "was" — as in "Therefore, the murderer was..." That word "was" started as a generic past-tense verb. But by the time it reaches the final layer, its embedding has been updated by 96 rounds of attention — pulling in information from every relevant clue, every character mention, every red herring in the entire context window. By the final layer, "was" is no longer just a verb — it's a compressed representation of the entire mystery, encoding which character the evidence points to. And that enriched vector is what gets unembedded into the probability distribution that (hopefully) assigns the highest probability to the correct suspect's name.
->
-> That's the power of attention. It takes flat, context-free word representations and transforms them into deep, contextually-rich vectors that encode meaning, relationships, and knowledge accumulated over many layers of processing.
+- "King" enters as generic royalty concept. After 96 layers: "fictional Scottish king who murdered predecessor, play from 1606, psychological consequences incoming"
+- All packed into same 12,288 numbers that started as just "king"
+- Mystery novel example: "the murderer was..." — "was" by final layer encodes all clues, suspects, red herrings from entire context
+- That enriched vector unembeds to probability distribution pointing at the correct suspect
+- Attention transforms flat dictionary-definition vectors into deep contextually-rich representations
 
 ---
 
@@ -778,23 +640,16 @@ Imagine a room full of people, each wearing a name tag describing what they know
 
 **Speaker notes:**
 
-> We've spent most of our time on attention, and rightfully so — it's the signature innovation. But there's a whole other half of each Transformer block that we've been glossing over: the feed-forward layers, also called MLPs — multilayer perceptrons. And they're actually where the majority of the model's parameters live.
->
-> Remember, each layer of the Transformer has two parts: attention (where words look at each other) and MLP (where each word gets processed independently). Attention is about relationships. MLPs are about knowledge.
->
-> Here's how an MLP works, using Grant's example. Imagine the vector flowing through the network currently encodes "Michael Jordan." The MLP needs to recognize this and add relevant facts — basketball, Chicago Bulls, jersey number 23.
->
-> **Step 1: Up-projection.** The vector gets multiplied by a huge matrix with about 50,000 rows. Each row is essentially a question, encoded as a direction in embedding space. One row might represent the direction "Michael + Jordan" — it's asking "does this vector point in the Michael direction AND the Jordan direction?" The dot product between the input vector and this row gives a high number only if both conditions are met. Then a bias of -1 is subtracted — meaning the match must be strong enough that both names are present, not just one.
->
-> **Step 2: ReLU gate.** The result goes through ReLU — if it's positive, the "neuron" activates. If it's negative or zero, the neuron stays at zero. This is essentially a yes/no switch. And because of how the bias works, it acts like an AND gate: it fires for "Michael Jordan" but not for just "Michael" or just "Jordan." Pretty clever.
->
-> **Step 3: Down-projection.** Each activated neuron corresponds to a column in a second matrix. That column encodes the knowledge to inject — a direction in embedding space that represents "basketball" or "Chicago Bulls." Active neurons contribute their knowledge; inactive neurons contribute nothing (they're multiplied by zero). A single neuron's column can encode *multiple* associated facts simultaneously — not just basketball, but also Chicago Bulls, number 23, the dunk from the free throw line.
->
-> **Step 4:** The result gets added back to the original vector. Now the vector that used to just encode "Michael Jordan" also encodes "plays basketball, Chicago Bulls, #23." The model has injected factual knowledge.
->
-> The scale is staggering. Each MLP block in GPT-3 has about 1.2 billion parameters. With 96 layers, that's roughly 116 billion parameters devoted to MLPs — about two-thirds of the entire model. Attention gets all the headlines, but the majority of the model is actually these knowledge-storage layers.
->
-> One last mind-bending detail from Grant's video: you might think each neuron cleanly represents one concept, like "Michael Jordan." In reality, individual neurons rarely represent single clean features. Instead, the model uses something called **superposition** — features overlap and share the same neurons, like multiple radio stations broadcasting on overlapping frequencies. A mathematical result called the Johnson-Lindenstrauss lemma shows that in 12,288-dimensional space, you can pack more than 40 billion nearly-independent directions — exponentially more than the number of dimensions. So the model can store vastly more concepts than it has neurons. As Grant puts it: "A space that has 10 times as many dimensions can store way, way more than 10 times as many independent ideas." This is why bigger models are so much more capable — more dimensions means exponentially more room for knowledge.
+- Attention = relationships between words. MLPs = knowledge/facts. MLPs hold 2/3 of GPT-3's params.
+- Example: "Michael Jordan" flows in → MLP adds basketball, Chicago Bulls, #23
+- Up-projection: ~50K rows each ask a yes/no question via dot product. Bias acts as AND gate.
+- ReLU gate: positive = fire (yes), negative = zero (no). "Michael Jordan" fires, "just Michael" doesn't.
+- Down-projection: each active neuron's column = knowledge to inject. Inactive neurons contribute nothing.
+- Single neuron column can encode multiple facts simultaneously
+- Scale: 1.2B params per MLP block x 96 layers = ~116B params (two-thirds of GPT-3)
+- Superposition: features share neurons like overlapping radio frequencies
+- Johnson-Lindenstrauss lemma: 12,288 dimensions can pack 40B+ nearly-independent directions
+- Bigger models = exponentially more room for knowledge
 
 ---
 
@@ -820,15 +675,10 @@ Imagine a room full of people, each wearing a name tag describing what they know
 
 **Speaker notes:**
 
-> Let's take a step back and see how far we've come in two hours.
->
-> We started with the simplest possible building block — a neuron, which is just a number between 0 and 1. We stacked neurons into layers, with each layer handling a different level of abstraction — edges, then patterns, then answers. We connected them with weights — volume knobs that control how much influence each neuron has on the next — and biases that set minimum thresholds.
->
-> Then we learned how those weights and biases get set: through the cost function (measuring how wrong the network is), gradient descent (rolling downhill to reduce that error), and backpropagation (tracing the error backward through the network to figure out which knobs to turn and by how much).
->
-> In the second hour, we took those exact same ideas and applied them to language. Words become tokens, tokens become embeddings — lists of numbers where similar words are close together and directions encode meaning. We learned about attention — the mechanism that lets each word look at every other word and update its meaning based on context — and we saw how it runs 96 heads in parallel across 96 layers for over 9,000 total attention passes. And we closed with MLPs — the layers that store factual knowledge, making up two-thirds of the entire model.
->
-> Nine concepts. That's the entire foundation of modern AI. Everything from ChatGPT to Claude to image generators to self-driving cars is built on these nine ideas.
+- Recap the 9-step staircase on slide — point to each one briefly
+- Hour 1: neuron → layers → weights/bias → cost function → gradient descent → backprop
+- Hour 2: tokens/embeddings → attention (96 heads x 96 layers = 9,216 passes) → MLPs (2/3 of model)
+- These 9 concepts = foundation of ALL modern AI: ChatGPT, Claude, image gen, self-driving cars
 
 ---
 
@@ -848,19 +698,13 @@ That's what turns an AI model into an AI **agent** — and that's what we're bui
 
 **Speaker notes:**
 
-> Everything we've covered so far is about the *brain* — the AI model itself. How it's built, how it learns, how it processes language. But a brain sitting in a jar can't *do* anything in the real world. It can answer questions and generate text, but it can't configure a firewall, query a database, check inventory levels, or file a report.
->
-> This afternoon, we're going to give that brain a body. Three things:
->
-> First, a **workflow engine** — that's LangGraph. It's the plumbing that defines what steps exist, what order they run in, and what data flows between them. Think of it as the organizational chart and the process flow.
->
-> Second, **tools** — Python functions that the AI can discover and call. Check a version number. Create a configuration. Query a threat intel database. These are the hands — the specific actions the brain can take in the real world.
->
-> Third, a **decision loop** — the ability for the AI to look at a situation, decide what to do, execute it, look at the result, and decide whether it needs to do more. This is what people mean when they say "AI agent" — it's not just responding, it's *reasoning, acting, observing, and adapting*.
->
-> Now when we get to the workshop and I say "the LLM decides what to do next," you know what's actually happening under the hood. The text of the situation is tokenized, embedded into 12,288-dimensional vectors, run through 96 layers of attention and MLPs, and the model predicts which tool to call next based on all of its training. Attention is weighing which parts of the context matter most. The MLPs are injecting relevant knowledge. And gradient descent on 300 billion training examples is what tuned all 175 billion parameters to make those decisions well.
->
-> You understand the brain. Now let's give it a body.
+- Everything so far = the brain. Brain alone can't configure firewalls or query databases.
+- This afternoon: give the brain a body. Three components:
+- Workflow engine (LangGraph) = defines steps, order, data flow
+- Tools (Python functions) = specific actions: configure, query, create, check
+- Decision loop = reason → act → observe → adapt. That's what makes it an "agent."
+- When I say "LLM decides" in workshop: text tokenized → embedded → 96 layers of attention + MLP → predicts next tool
+- You now understand the brain. Next: give it a body.
 
 ---
 
@@ -881,11 +725,10 @@ That's what turns an AI model into an AI **agent** — and that's what we're bui
 
 **Speaker notes:**
 
-> That's a wrap on Session 0. Let me leave you with this: you now have a genuine understanding of how AI works — not just what it does, but *how it does it*. You know what a neuron is, how layers decompose hard problems, how gradient descent and backpropagation train the network, how tokens and embeddings represent language, how attention enables context, and how MLPs store knowledge.
->
-> When someone at a dinner party says "AI is going to take over the world," you can say "Well, it's actually a function that predicts the next word by computing dot products between learned query and key vectors across 96 attention heads, enriched by feed-forward layers that inject factual knowledge, all trained via stochastic gradient descent on 300 billion tokens of text." That should clear the room pretty quickly. [pause for laugh]
->
-> But seriously — this foundation is going to make everything this afternoon click. When we start building AI agents, you'll understand what's happening under the hood at every step. Let's take 15 minutes, grab some coffee, and then we'll start building.
+- Wrap: you now know how AI works — not just what, but how
+- Dinner party answer: "function that predicts next word via dot products across 96 attention heads, trained via SGD on 300B tokens" [pause for laugh]
+- This foundation makes the afternoon workshop click — you'll know what's under the hood
+- 15-minute break, then we start building
 
 ---
 

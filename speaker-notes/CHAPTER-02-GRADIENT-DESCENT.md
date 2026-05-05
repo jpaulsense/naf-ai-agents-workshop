@@ -39,14 +39,11 @@
 
 **Speaker notes:**
 
-- The network has 13,002 adjustable knobs (weights and biases)
-  - With random settings, the output is nonsense
-  - "Learning" means finding the right settings — but first you need a way to measure how far off you are
-- Show the network an image of a 3
-  - Ideal: "3" neuron at 1.0, everything else near 0.0
-  - Reality with random weights: "3" neuron might be at 0.2, "8" at 0.6, "5" at 0.4
-  - Clearly terrible — but we need to put a number on "how terrible"
-- That number is the **cost** — and computing it is the first step in learning
+- 13,002 adjustable parameters; random settings = garbage output
+- "Learning" = finding good settings; need a metric for "how wrong"
+- Ideal output for a 3: "3" neuron at 1.0, all others near 0
+- Random weights: "3" at 0.2, "8" at 0.6 — clearly wrong, but need a number to quantify it
+- That number = the **cost**
 
 ---
 
@@ -67,19 +64,12 @@ The cost function is like an inverted exam score. Zero is perfect — the networ
 
 **Speaker notes:**
 
-- Walk through the math with a concrete example:
-  - "3" neuron desired: 1.0, actual: 0.2 — difference: 0.8, squared: 0.64
-  - "8" neuron desired: 0.0, actual: 0.6 — difference: 0.6, squared: 0.36
-  - Add up all 10 squared differences — that is the cost for this one image
-- Why square?
-  - Makes negatives positive — we just care about size of the error, not direction
-  - Amplifies big errors — a neuron that is way off gets penalized more than one that is slightly off
-- One image gives one cost, but you need the big picture
-  - Average the cost across all 60,000 training images
-  - That average is a single number: the network's overall performance score
-- The cost function takes in 13,002 parameters and spits out one number
-  - Think of it as a landscape: each combination of parameters is a location, and the cost is the elevation
-  - We need to find the lowest valley — that is where the best parameter settings live
+- Cost for one image = sum of squared differences between actual and desired output
+- Example: "3" desired 1.0, actual 0.2 → (0.8)^2 = 0.64; "8" desired 0.0, actual 0.6 → (0.6)^2 = 0.36
+- Squaring: makes all positive + amplifies big errors over small ones
+- Average cost across all 60,000 training images = single performance score
+- Cost function: takes 13,002 parameters in, spits one number out
+- Think of it as a landscape — each parameter combo is a location, cost is the elevation; find the lowest valley
 
 ---
 
@@ -102,18 +92,12 @@ You are blindfolded on a hillside. You feel the ground tilt under your feet. You
 
 **Speaker notes:**
 
-- Start with the simplest possible version — one parameter, one cost value
-  - Draw a wavy curve — horizontal axis is the parameter value, vertical axis is the cost
-  - You drop a ball at a random spot — that is your initial random parameter
-- You cannot see the landscape — you are blindfolded
-  - All you can do is feel the slope — is the ground tilting left or right?
-  - The slope is the **derivative** — it tells you the direction of steepest ascent
-  - Go the other way — that is the direction of steepest descent
-- Take a small step in the downhill direction
-  - Recompute the slope at your new position
-  - Take another step
-  - Repeat until you settle into a valley
-- This is gradient descent in one dimension — the core idea
+- Simplest case: one parameter (x-axis) vs. cost (y-axis) — a wavy curve
+- Start at random point = random initial parameter value
+- Blindfolded: can only feel the slope (the derivative) at current position
+- Slope = direction of steepest ascent; go opposite = steepest descent
+- Step downhill, recompute slope, step again, repeat until valley
+- This is gradient descent in 1D — the core idea
 
 ---
 
@@ -131,17 +115,11 @@ You are blindfolded on a hillside. You feel the ground tilt under your feet. You
 
 **Speaker notes:**
 
-- The landscape is not a simple bowl — it has hills, ridges, and multiple valleys
-  - Where you end up depends on where you start
-  - Two different random starting points can lead to two different solutions
-- The valley you land in might not be the deepest one
-  - The deepest valley is the "global minimum" — the absolute best parameter settings
-  - You might land in a "local minimum" — a valley that is not the absolute best but is still pretty low
-- Why this is OK in practice:
-  - With 13,000+ parameters, the landscape is so complex that there are many good valleys
-  - Most local minima in high-dimensional spaces turn out to perform well
-  - Grant's point: "depending on which random input you start at, you may wind up in different local minima, with no real guarantee that the local minimum you land in is going to be the smallest possible value"
-  - In real-world applications, the local minima you find are usually good enough
+- Cost landscape has multiple valleys — where you end up depends on where you start
+- Global minimum = absolute best; local minimum = nearby valley, not necessarily the deepest
+- Different random starts → different solutions
+- In practice, local minima are fine — with 13,000+ dimensions, most local minima perform well
+- No guarantee of global optimum, but good enough for real-world use
 
 ---
 
@@ -162,17 +140,11 @@ The sign of the slope tells you which direction to go. The magnitude of the slop
 
 **Speaker notes:**
 
-- A natural and elegant feature of gradient descent:
-  - Steep slope = you are far from the bottom, so take a big step
-  - Gentle slope = you are close to the bottom, so take a tiny step
-  - You naturally slow down as you approach the minimum
-- Why this matters:
-  - If your steps are always the same size, you might overshoot the valley and bounce back and forth forever
-  - Proportional steps prevent that — "if the slope is smaller, each step should be smaller as well"
-- The slope gives you two pieces of information in one number:
-  - **Sign** (positive or negative): which direction to step
-  - **Size** (large or small): how big a step to take
-- This is why gradient descent works so well — it self-regulates
+- Step size proportional to slope steepness — steep = big step, gentle = tiny step
+- Naturally slows down near the minimum; prevents overshooting
+- Fixed step size would bounce back and forth across the valley
+- Slope encodes two things: **sign** = direction, **magnitude** = step size
+- Self-regulating: no need to manually tune step sizes
 
 ---
 
@@ -192,19 +164,11 @@ The sign of the slope tells you which direction to go. The magnitude of the slop
 
 **Speaker notes:**
 
-- Now scale up from one parameter to two
-  - With one parameter, the cost is a curve (1D)
-  - With two parameters, the cost is a surface — like a topographic map
-  - The gradient is no longer just a slope — it is a 2D arrow (a vector)
-- The gradient vector points in the direction of steepest ascent
-  - Just like on a real mountain: stand at any point, look around, find the steepest uphill direction
-  - The gradient points that way
-  - Take the negative of it — now you have the direction of steepest descent
-- Take a small step in the negative gradient direction
-  - Both parameters get adjusted simultaneously
-  - Recompute the gradient at your new position, step again, repeat
-- The concept is the same as 1D, just richer
-  - Instead of "step left or right," you now have a full direction in 2D space
+- Two parameters → cost is a surface (like a topo map) instead of a curve
+- Gradient = 2D vector pointing in direction of steepest ascent
+- Negative gradient = direction of steepest descent — that's where you step
+- Both parameters adjusted simultaneously each step
+- Same concept as 1D but with a full directional arrow instead of just left/right
 
 ---
 
@@ -223,18 +187,11 @@ The sign of the slope tells you which direction to go. The magnitude of the slop
 
 **Speaker notes:**
 
-- Our digit network has 13,002 parameters — weights and biases
-  - The gradient is a list (a vector) of 13,002 numbers — one per parameter
-  - Each number tells you exactly what to do with that parameter
-- Two pieces of information per component:
-  - The **sign** tells you the direction — should this weight go up or down to reduce cost?
-  - The **size** tells you the sensitivity — how much does the cost care about this parameter?
-- Think of it as a ranked priority list
-  - "Here are your 13,002 knobs. Here is exactly which direction to turn each one, and here is how much each one matters relative to the others."
-  - Some parameters barely affect the cost — small gradient components
-  - Others are critical — large gradient components
-- Grant's key phrase: the gradient "encodes the relative importance of each weight and bias"
-  - It tells you which changes will give you the most bang for your buck
+- Gradient = vector of 13,002 numbers, one per parameter
+- Each component's **sign** = direction (increase or decrease), **size** = sensitivity
+- Component of 3.2 vs 0.1 means cost is 32x more sensitive to the first parameter
+- Gradient encodes "relative importance of each weight and bias"
+- Small component = parameter barely matters; large component = high-leverage knob
 
 ---
 
@@ -257,18 +214,11 @@ Like a mechanic diagnosing a car problem. There are a hundred things you could a
 
 **Speaker notes:**
 
-- This is one of the most powerful aspects of gradient descent
-  - You do not adjust all 13,002 parameters equally
-  - The gradient gives you a precise ranking of which adjustments matter most
-- Think about it from the network's perspective:
-  - Some connections carry signals that heavily influence the output
-  - Other connections carry signals that barely matter
-  - The gradient automatically identifies the high-leverage connections
-- This is also why gradient descent scales
-  - Even with billions of parameters, the gradient tells you exactly where to focus
-  - Without it, you would be turning random knobs and hoping for the best
-  - With it, every step is targeted at the most impactful adjustments
-- Bridge: "OK, so gradient descent sounds great — but does it actually work? What happens when you train the digit network?"
+- Gradient = ranked priority list of which adjustments matter most
+- Not all 13,002 parameters adjusted equally — focus on high-leverage ones
+- Some connections heavily influence output; others barely matter — gradient identifies which
+- Scales to billions of parameters: every step targets the most impactful adjustments
+- Without gradient: random knob-turning; with gradient: precision targeting
 
 ---
 
@@ -291,20 +241,11 @@ The network found parameter settings that work, but they do not decompose the pr
 
 **Speaker notes:**
 
-- Training results: about 96% accuracy on test images after gradient descent
-  - That is genuinely impressive — from random weights to recognizing handwriting
-  - But 96% is not 100% — it still makes mistakes
-- The surprise: look at what the hidden layers actually learned
-  - Remember the hope from Chapter 1 — that Layer 1 would learn edges, Layer 2 would learn loops and curves
-  - When you visualize the weights, they look almost random — splotchy, noisy, no clean structure
-  - "Some vague patterns" but nothing like the clean edge detectors we hoped for
-- What does this mean?
-  - The network found a different strategy — one that works but is not human-interpretable
-  - It solved the problem, just not the way we expected
-  - This is a recurring theme in AI: the solution works, but we often cannot explain exactly how
-- This result motivates more sophisticated architectures
-  - Modern convolutional neural networks (CNNs) do learn clean edge detectors
-  - The simple 2-layer network we are discussing is a starting point, not the final answer
+- ~96% accuracy after training — impressive but not perfect
+- Hidden layer weights visualized: splotchy/noisy, not the clean edge detectors we hoped for
+- Network found a strategy that works but is not human-interpretable
+- Recurring AI theme: solution works, but we cannot explain exactly how
+- Modern CNNs do learn clean edges; this simple 2-layer network is just the starting point
 
 ---
 
@@ -322,20 +263,11 @@ The network found parameter settings that work, but they do not decompose the pr
 
 **Speaker notes:**
 
-- A critical limitation worth understanding
-  - The network has 10 output neurons — one per digit
-  - It always assigns probabilities across those 10 options
-  - There is no 11th output for "this is not a digit"
-- Feed it random noise — it will say "that's a 5" with high confidence
-  - It has no mechanism for saying "I don't know" or "this doesn't look like any digit"
-  - Grant's point: the network "has no notion of the concept of a digit in general"
-- Why this matters for real-world AI:
-  - Same issue shows up in modern AI — models can be confidently wrong
-  - A language model generating plausible-sounding nonsense is the same problem at a larger scale
-  - Understanding this limitation is important when deploying AI in real systems
-- This is a design limitation, not a training failure
-  - The architecture forces a classification — it does not allow for "none of the above"
-  - More sophisticated systems build in uncertainty estimation, but the basic architecture does not have it
+- 10 output neurons = always picks a digit; no 11th "not a digit" option
+- Feed random noise → still outputs a confident digit classification
+- Network "has no notion of the concept of a digit in general"
+- Design limitation, not training failure — architecture forces a classification
+- Same problem in modern AI: models can be confidently wrong (LLM hallucinations = same issue at scale)
 
 ---
 
@@ -357,25 +289,11 @@ The network found parameter settings that work, but they do not decompose the pr
 
 **Speaker notes:**
 
-- The practical problem with "pure" gradient descent:
-  - To compute the true gradient, you need to process every single training image
-  - For 60,000 images, that is one gradient computation = one step
-  - Absurdly expensive for larger datasets — imagine billions of examples
-- Stochastic gradient descent is the solution everyone uses:
-  - Randomly shuffle the training data
-  - Grab a mini-batch — about 100 examples
-  - Compute the gradient from just those 100, take a step
-  - Grab another 100, compute, step, repeat
-- Each step is not the "true" gradient — it is an approximation
-  - Sometimes it points slightly wrong — noisy, imperfect
-  - But on average, it points in roughly the right direction
-  - And each step is incredibly fast compared to processing the full dataset
-- Grant's analogy: "a drunk man stumbling aimlessly down a hill but taking quick steps" vs. "a carefully calculating man taking slow, precise steps downhill"
-  - The drunk man gets to the bottom faster despite the wobble
-  - Each individual step is suboptimal, but the speed more than compensates
-- This is how every modern AI model trains
-  - GPT-3, Claude, every image model — all use stochastic gradient descent
-  - Mini-batches, noisy steps, fast iterations, overall trend downhill
+- Full gradient requires processing all 60,000 images for one step — too expensive
+- SGD: shuffle data, grab mini-batch of ~100, compute gradient, step, repeat
+- Each step is approximate/noisy but fast; overall trend is still downhill
+- Analogy: drunk man (fast, wobbly steps) beats careful man (slow, precise steps) to the bottom
+- Every modern AI model trains this way — GPT, Claude, image models — all SGD with mini-batches
 
 ---
 
@@ -396,16 +314,12 @@ The network found parameter settings that work, but they do not decompose the pr
 
 **Speaker notes:**
 
-- Quick recap of the four core ideas:
-  1. **Cost function** — a single number that grades the network's performance across all training examples
-  2. **Gradient descent** — compute the slope, step downhill, repeat until you reach a valley
-  3. **The gradient** — 13,002 numbers that tell you exactly which parameters to adjust and by how much
-  4. **Stochastic gradient descent** — use mini-batches of ~100 examples for fast, approximate steps
-- These four ideas are the engine behind every AI model ever trained
-  - The architecture changes, the scale changes, but the learning algorithm is the same
-  - Measure error, compute gradient, take a step, repeat
-- Next up: backpropagation — the algorithm that actually computes the gradient efficiently
-  - "How do you figure out, for each of those 13,002 parameters, exactly how it affects the cost?"
+- Cost function = single number grading overall performance
+- Gradient descent = compute slope, step downhill, repeat
+- Gradient vector = 13,002 numbers saying which parameters to adjust and how much
+- SGD = mini-batches of ~100 for fast approximate steps
+- Same algorithm behind every AI model — architecture and scale change, learning loop stays the same
+- Next: backpropagation — how to efficiently compute those 13,002 gradient values
 
 ---
 

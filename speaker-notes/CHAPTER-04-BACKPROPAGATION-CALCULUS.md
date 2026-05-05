@@ -44,17 +44,12 @@ Think of a line of dominoes. Flick the first one (change a weight), and the effe
 
 **Speaker notes:**
 
-- We covered backpropagation conceptually in Session 0 — "trace errors backward to assign blame"
-  - Now we're going to see the *mechanics* — how the math actually works
-  - Don't worry — we'll use pictures and analogies, not formulas on a whiteboard
-- To make it understandable, we strip the network down to one neuron per layer
-  - A chain instead of a web — just to see the logic clearly
-  - Everything we learn here scales up to real networks with thousands of neurons
-- The cost function for one training example: how far is the output from the desired answer?
-  - Square the difference so errors are always positive and big errors count more
-- The question we're answering: if I turn one weight knob slightly, how much does the cost change?
-  - That ratio — change in cost per change in weight — is the derivative
-  - Get that for every weight and bias, and you have the gradient
+- Previously: backprop conceptually ("trace errors backward"); now: the mechanics
+- Strip network to one neuron per layer — a chain, not a web — to see logic clearly
+- Everything here scales to real networks with thousands of neurons
+- Cost for one example = (output - desired)^2; squaring makes positive + amplifies big errors
+- Core question: nudge one weight slightly → how much does cost change? That ratio = derivative
+- Get the derivative for every weight and bias → you have the gradient
 
 ---
 
@@ -80,17 +75,11 @@ The chain rule is just common sense: if turning a knob by 1 unit moves a lever b
 
 **Speaker notes:**
 
-- The chain rule is the core mechanic — and it's simpler than it sounds
-  - Imagine a Rube Goldberg machine: nudge one thing, it nudges the next, which nudges the next
-  - Each link in the chain has a ratio: "how much does the next thing change per unit of change in this thing?"
-  - Multiply all the ratios together to get the end-to-end sensitivity
-- Concretely for our one-neuron chain:
-  - Nudge weight w(L) → the weighted sum z(L) changes (ratio 1)
-  - Changed z(L) → the activation a(L) changes after going through the squish function (ratio 2)
-  - Changed a(L) → the cost C changes because the output moved relative to the target (ratio 3)
-- Total sensitivity of cost to weight = ratio 1 x ratio 2 x ratio 3
-  - That product *is* the derivative — the gradient component for that weight
-- This is the entire idea — the rest is just figuring out what each ratio actually is
+- Chain rule = multiply the ratios along the cascade
+- Nudge w(L) → z(L) changes (ratio 1) → a(L) changes via squish function (ratio 2) → C changes (ratio 3)
+- Total sensitivity = ratio 1 x ratio 2 x ratio 3 = the derivative (gradient component for that weight)
+- Rube Goldberg analogy: each link has a ratio; multiply them all for end-to-end sensitivity
+- That's the entire idea — rest is just figuring out what each ratio equals
 
 ---
 
@@ -112,20 +101,10 @@ The chain rule is just common sense: if turning a knob by 1 unit moves a lever b
 
 **Speaker notes:**
 
-- Let's decode each of the three ratios in the chain
-- **Ratio 3 — dC/da: how much does cost care about the output?**
-  - Answer: 2 times the error (the difference between output and target)
-  - Big error → big sensitivity → big correction. Small error → small correction
-  - Makes intuitive sense — you fix the biggest problems first
-- **Ratio 2 — da/dz: how much does the activation respond to the weighted sum?**
-  - This is the slope of whatever squish function (activation function) you're using
-  - For sigmoid: steepest in the middle, flat at extremes
-  - For ReLU: either 0 (input was negative) or 1 (input was positive) — nice and simple
-- **Ratio 1 — dz/dw: how much does the weighted sum respond to the weight?**
-  - z = w x a(previous) + b, so dz/dw = a(previous)
-  - This is the previous neuron's activation
-  - If the previous neuron was bright (high activation), changing this weight has a big effect
-  - If the previous neuron was dim (low activation), changing this weight barely matters
+- dC/da = 2(a - y): sensitivity proportional to error size; big miss = big correction
+- da/dz = slope of activation function; sigmoid: steep middle, flat extremes; ReLU: 0 or 1
+- dz/dw = a(L-1): equals previous neuron's activation; bright neuron = big effect, dim = negligible
+- All three multiplied together = gradient component for that weight
 
 ---
 
@@ -146,19 +125,11 @@ Hebbian learning in one sentence: "Neurons that fire together wire together." Th
 
 **Speaker notes:**
 
-- This is one of the most elegant connections in AI
-  - The math says: weight adjustment = (error signal) x (activation of the previous neuron)
-  - So the weight changes most when the upstream neuron was firing strongly
-- In neuroscience, this is called Hebbian learning
-  - "Neurons that fire together wire together" — connections between simultaneously active neurons get reinforced
-  - The artificial version arrives at the same principle, purely from the calculus
-- Practical implication: the network preferentially strengthens connections to neurons that are *relevant*
-  - Active neurons = neurons detecting something useful in the input
-  - The network reinforces the pathways that contributed to the answer
-- Bias sensitivity is almost identical
-  - dz/db = 1 (since z = wa + b, the derivative with respect to b is just 1)
-  - So bias gradient = (da/dz) x (dC/da) — same chain, just without the a(L-1) factor
-  - Bias adjustments don't depend on the previous activation — they shift the threshold directly
+- Weight adjustment = (error signal) x (previous neuron's activation) — changes most when upstream is bright
+- Hebbian learning: "fire together, wire together" — emerges naturally from the calculus
+- Network preferentially strengthens connections to relevant (active) neurons
+- Bias: dz/db = 1, so bias gradient = (da/dz) x (dC/da) — no dependence on previous activation
+- Bias shifts the threshold directly; weight adjustment depends on what's feeding in
 
 ---
 
@@ -178,19 +149,12 @@ Hebbian learning in one sentence: "Neurons that fire together wire together." Th
 
 **Speaker notes:**
 
-- So far we've computed the gradient for the *last* weight in the chain
-  - But a real network has weights at every layer — we need gradients for all of them
-- The trick: we also computed dC/da(L-1) as a byproduct
-  - That tells us how sensitive the cost is to the *previous neuron's activation*
-  - And dz/da(L-1) = w(L) — the weight on the connection
-  - Large weight = high sensitivity = that previous neuron has a big influence on the cost
-- Now treat a(L-1) as the new "output" and repeat the whole chain rule
-  - How does a(L-1) depend on z(L-1)? Through the activation function
-  - How does z(L-1) depend on w(L-1)? Through the activation before it, a(L-2)
-  - Multiply the ratios — same pattern, one layer back
-- Keep iterating backward until you hit the input layer
-  - Every weight and bias in the network gets a gradient component
-  - That's why it's called *back*propagation — the computation flows from output to input
+- So far: gradient for last weight only; real networks need gradients for every layer
+- Byproduct: dC/da(L-1) — how sensitive cost is to previous neuron's activation
+- dz/da(L-1) = w(L): large weight = previous neuron has big influence on cost
+- Treat a(L-1) as new "output," repeat same chain rule one layer back
+- Keep iterating backward until input layer — every weight and bias gets a gradient component
+- "Back" propagation = computation flows output → input
 
 ---
 
@@ -213,19 +177,11 @@ If you're a squad leader and three different platoon leaders each rely on your r
 
 **Speaker notes:**
 
-- Our one-neuron-per-layer example was a straight chain — one path forward, one path backward
-  - Real networks have 16, 128, or thousands of neurons per layer
-  - Each neuron connects to every neuron in the next layer
-- What changes?
-  - A single neuron's activation influences multiple neurons in the next layer
-  - Each of those downstream neurons contributes a separate "blame signal" back
-  - To get the total gradient for a weight, you sum the contributions from all the paths it influences
-- The formulas look busier because of subscripts j and k
-  - w(jk) = weight from neuron k in layer L-1 to neuron j in layer L
-  - But the chain rule logic is identical — multiply the ratios along each path, then sum
-- This is where it becomes computationally expensive
-  - Hundreds of neurons x hundreds of connections x hundreds of layers = millions of chain rule products
-  - That's why we need GPUs — they do millions of multiplications in parallel
+- Real networks: 16, 128, or thousands of neurons per layer; each connects to every neuron in next layer
+- One neuron's activation influences multiple downstream neurons — each sends a "blame signal" back
+- Total gradient for a weight = sum contributions from all paths it influences
+- Subscript notation: w(jk) = weight from neuron k in L-1 to neuron j in L; chain rule logic identical
+- Computationally expensive: hundreds x hundreds x hundreds = millions of products → need GPUs for parallelism
 
 ---
 
@@ -247,23 +203,11 @@ Backpropagation isn't a separate algorithm from gradient descent — it's the ef
 
 **Speaker notes:**
 
-- Let's zoom out and see the complete picture
-  - For every weight in the network, the chain rule gives us a derivative
-  - For every bias, same thing
-  - Those derivatives, collected together, form the gradient vector
-- The gradient vector is the input to gradient descent
-  - It says: "here's the direction of steepest descent in parameter space"
-  - Take a step in that direction → cost goes down → network gets slightly better
-- One subtlety: we compute the gradient for each training example separately
-  - Then average across the mini-batch to get a stable direction
-  - That average gradient is what drives the actual parameter update
-- Backpropagation vs. gradient descent — people sometimes confuse these
-  - Gradient descent is the *strategy*: "walk downhill to minimize cost"
-  - Backpropagation is the *calculation method*: "here's how to efficiently compute which direction is downhill"
-  - They work together — backprop computes the gradient, gradient descent uses it
-- This is the exact same process used to train GPT, Claude, image generators, self-driving cars
-  - Same chain rule, same backward propagation, same gradient descent
-  - The only difference is scale — billions of parameters instead of thousands
+- Chain rule gives a derivative for every weight and bias → collected = gradient vector
+- Gradient vector = input to gradient descent; direction of steepest descent in parameter space
+- Compute gradient per training example, average across mini-batch → stable direction for parameter update
+- Backprop vs gradient descent: backprop *computes* which way is downhill; gradient descent *steps* that way
+- Same process trains GPT, Claude, image generators, self-driving cars — only scale differs (billions vs thousands of params)
 
 ---
 

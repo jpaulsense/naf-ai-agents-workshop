@@ -44,15 +44,9 @@ Below: a single embedding vector labeled "mole" with a question mark — "Same i
 
 **Speaker notes:**
 
-- The fundamental problem: initial embeddings are context-free
-  - The word "mole" gets the exact same 12,288 numbers every time — whether it means an animal, a chemistry unit (6.022 times 10 to the 23rd), or a skin growth
-  - Three completely different meanings, identical starting vectors
-- The network needs a way for surrounding words to reach over and update each other's meanings
-  - "American shrew" should tell "mole" to emphasize its animal-related dimensions
-  - "One... of carbon dioxide" should push "mole" toward its chemistry meaning
-  - "biopsy" should activate the medical meaning
-- This is the problem attention was invented to solve
-  - It's the mechanism that lets words look at each other and update their embeddings based on context
+- Initial embeddings are context-free — "mole" gets same 12,288 numbers regardless of meaning
+- Three meanings (animal, chemistry 6.022x10^23, skin growth) but identical starting vector
+- Attention = the mechanism that lets surrounding words update each other's embeddings based on context
 
 ---
 
@@ -72,17 +66,10 @@ Below: a single embedding vector labeled "mole" with a question mark — "Same i
 
 **Speaker notes:**
 
-- Grant uses great examples to drive this home
-  - "Eiffel tower" vs. "miniature tower" — the word "tower" starts identical in both cases
-    - But "Eiffel" should inject: Paris, wrought iron, 1,000 feet tall, built in 1889
-    - "Miniature" should inject: small, decorative, maybe a toy
-  - "Harry" is completely ambiguous on its own
-    - Add "wizard" and surrounding Harry Potter context → it's the boy who lived
-    - Add "Queen" and "Sussex" → it's Prince Harry, Duke of Sussex
-- The initial embedding is like a blank canvas
-  - It has the general shape of the word's meaning
-  - But attention paints the specific, contextual meaning based on what surrounds it
-- This is why attention is so critical — without it, every "tower" would be the same tower, every "Harry" the same Harry
+- "Tower" starts identical in "Eiffel tower" and "miniature tower" — "Eiffel" injects Paris/iron/1000ft; "miniature" injects small/decorative
+- "Harry" is ambiguous — "wizard" context → Harry Potter; "Queen"+"Sussex" context → Prince Harry
+- Initial embedding = blank canvas with general shape; attention paints the specific contextual meaning
+- Without attention, every "tower" is the same tower, every "Harry" the same Harry
 
 ---
 
@@ -104,15 +91,10 @@ A single vector of 12,288 numbers, after 96 layers of attention, can encode an e
 
 **Speaker notes:**
 
-- This is Grant's most powerful example of why attention matters
-  - Imagine a mystery novel — hundreds of pages of suspects, clues, misdirection, alibis
-  - The last line: "Therefore, the murderer was..."
-  - The model needs to predict the correct name
-- The word "was" entered the network as a simple past-tense verb
-  - But by the time it reaches the final layer, attention has pulled in information from across the entire context
-  - Every relevant clue, every character introduction, every red herring has been gathered and compressed into that single vector
-- This is the ultimate test of attention: can the model attend to the right information across thousands of tokens, ignore the noise, and compress the answer into a single vector that predicts the correct next word?
-- In practice, current models can do surprisingly well at this — though longer contexts remain challenging
+- Mystery novel ending: "Therefore, the murderer was..." — model must predict the correct name
+- "Was" entered as a simple past-tense verb; by final layer, attention compressed entire novel's clues into that one vector
+- Ultimate attention test: attend to right info across thousands of tokens, ignore noise, compress to one prediction
+- Current models do surprisingly well at this; longer contexts remain challenging
 
 ---
 
@@ -132,15 +114,10 @@ A single vector of 12,288 numbers, after 96 layers of attention, can encode an e
 
 **Speaker notes:**
 
-- We'll walk through the attention mechanism using this sentence from Grant's video
-  - "A fluffy blue creature roamed the verdant forest"
-- The goal of attention in this sentence:
-  - "Creature" should end up knowing it's fluffy and blue
-  - "Forest" should end up knowing it's verdant (lush and green)
-- The challenge: how does "creature" know to pay attention to "fluffy" and "blue" but not "roamed" or "the"?
-  - And how does this work automatically, without anyone programming "nouns should look for adjectives"?
-- Three learned matrices make this happen: **query**, **key**, and **value**
-  - Let's take them one at a time
+- Running example: "A fluffy blue creature roamed the verdant forest"
+- Goal: "creature" absorbs fluffy+blue; "forest" absorbs verdant
+- Challenge: how does "creature" know to attend to "fluffy"/"blue" but not "roamed"/"the" — without anyone programming "nouns look for adjectives"?
+- Three learned matrices do this: query, key, value
 
 ---
 
@@ -159,18 +136,10 @@ A single vector of 12,288 numbers, after 96 layers of attention, can encode an e
 
 **Speaker notes:**
 
-- First piece of the puzzle: **queries**
-  - Every word in the sentence gets multiplied by a query matrix (W_Q) to produce a query vector
-  - Think of the query as the word raising its hand and asking: "What kind of information do I need?"
-- For nouns like "creature," the query might encode something like: "Are there any adjectives sitting near me that describe what kind of creature I am?"
-  - The model doesn't literally think in English — the query is a learned vector pattern
-  - But the *effect* is that nouns learn to generate queries that match with adjective-type information
-- The query vector is smaller than the full embedding — 128 dimensions instead of 12,288
-  - This compression is deliberate — it makes the computation cheaper
-  - And it forces the query to focus on the *type* of relationship, not every possible detail
-- Each attention head has its own W_Q matrix, so different heads ask different questions
-  - One head's queries might focus on "find my adjectives"
-  - Another head's queries might focus on "find the verb I'm the subject of"
+- Query matrix (W_Q) transforms each word's 12,288-D embedding into a 128-D query vector = "what information do I need?"
+- Nouns learn to generate queries that match with adjective-type keys — not programmed, learned during training
+- 128-D (not 12,288) is deliberate: cheaper computation and forces focus on relationship type
+- Each attention head has its own W_Q — different heads ask different questions (adjectives, verbs, coreference, etc.)
 
 ---
 
@@ -189,19 +158,11 @@ A single vector of 12,288 numbers, after 96 layers of attention, can encode an e
 
 **Speaker notes:**
 
-- Second piece: **keys**
-  - Every word also gets multiplied by a key matrix (W_K) to produce a key vector
-  - The key is the word's advertisement: "Here's what I have to offer"
-- Adjectives like "fluffy" and "blue" generate keys that encode something like: "I'm a descriptor — I have property information to share"
-  - "Roamed" generates a key that says something different — maybe "I'm a verb with action information"
-  - "The" generates a key with minimal information to offer
-- The critical design choice: keys live in the **same** 128-dimensional space as queries
-  - This means you can directly compare them via dot product
-  - When a query and key point in similar directions → high dot product → "these are relevant to each other"
-  - When they point in different directions → low dot product → "not relevant"
-- So "creature"'s query (looking for descriptors) will have a high dot product with "fluffy"'s key (offering descriptor information) and "blue"'s key
-  - But low dot product with "roamed"'s key or "the"'s key
-  - The matching happens automatically — learned during training
+- Key matrix (W_K) transforms each word into a 128-D key vector = "here's what information I have to offer"
+- Adjectives generate keys advertising "I'm a descriptor"; verbs advertise action info; "the" has minimal info to offer
+- Keys live in same 128-D space as queries — compared via dot product: similar direction = relevant, different = not relevant
+- "Creature" query (seeking descriptors) dot "fluffy" key (offering descriptor) = high score; dot "roamed" key = low score
+- Matching is automatic — learned during training, not programmed
 
 ---
 
@@ -224,19 +185,10 @@ A triangular mask overlay on the upper-right portion, labeled: "Masking: later w
 
 **Speaker notes:**
 
-- Now we put queries and keys together
-  - For every pair of words, compute the dot product of one word's query with another word's key
-  - This creates a grid — rows are the words asking questions (queries), columns are the words offering answers (keys)
-  - Each cell contains a score: how relevant is this key to this query?
-- Apply softmax along each row to normalize
-  - The scores in each row now sum to 1.0 — they become attention weights
-  - "Creature" might give 40% attention to "fluffy," 35% to "blue," 10% to "A," and small amounts to everything else
-- **Masking** is a critical detail for text generation
-  - During training, the model processes entire sequences at once for efficiency
-  - But a word at position 50 can't be allowed to look at position 51 — that's seeing the future
-  - Solution: set all "future" scores to negative infinity before softmax
-  - After softmax, negative infinity becomes zero — the word can't attend to anything after it
-  - The attention pattern ends up looking like a triangle — each word only attends to itself and earlier words
+- Dot product every query with every key → grid of relevance scores (rows = queries, columns = keys)
+- Softmax each row → scores sum to 1.0 = attention weights; e.g., "creature" gives 40% to "fluffy," 35% to "blue," small amounts elsewhere
+- Masking: words can't attend to future positions — set future scores to -infinity before softmax → become zero after
+- Result is a triangular attention pattern — each word only attends to itself and earlier words
 
 ---
 
@@ -262,21 +214,10 @@ Show: "creature" paying 40% attention to "fluffy" → receives 40% of fluffy's v
 
 **Speaker notes:**
 
-- Queries and keys are about matchmaking — figuring out which words are relevant to which
-  - But they don't carry the actual information that gets transferred
-  - That's the job of the third matrix: the **value matrix** (W_V)
-- Each word gets multiplied by the value matrix to produce a value vector
-  - This vector encodes: "If someone is paying attention to me, here's the actual information I'll give them"
-  - "Fluffy"'s value vector encodes the semantic content of fluffiness
-  - Not "I'm an adjective" (that was the key's job) but the actual meaning — soft, fuzzy, textured
-- The information transfer works like this:
-  - "Creature" has attention weights: 40% on "fluffy," 35% on "blue," 10% on "A," etc.
-  - Multiply each word's value vector by the attention weight
-  - Sum them all up → this is the context update for "creature"
-  - Add that update to "creature"'s original embedding
-- After this step, "creature" is no longer a generic creature
-  - Its embedding has been nudged in the direction of fluffiness and blueness
-  - It's been enriched by context
+- Queries/keys = matchmaking (who attends to whom); values = the actual content transferred
+- Value matrix (W_V) encodes: "if someone attends to me, here's the info I give them" — "fluffy" offers soft/fuzzy/textured meaning
+- Transfer: multiply each word's value vector by its attention weight, sum them all → context update for the attending word
+- Update gets ADDED to original embedding — "creature" now encodes fluffiness and blueness; enriched by context
 
 ---
 
@@ -299,19 +240,10 @@ Label: "Low-rank factorization — ~1.5M parameters per matrix per head (instead
 
 **Speaker notes:**
 
-- A practical detail about how values are computed
-  - A full value matrix mapping 12,288 dimensions to 12,288 dimensions would have ~150 million parameters — per head
-  - With 96 heads, that's 14.4 billion parameters in just the value matrices of one layer
-  - Way too expensive
-- Solution: factor the value transformation into two smaller matrices
-  - **Value-down**: compress from 12,288 to 128 dimensions (~1.5M parameters)
-  - **Value-up**: expand from 128 back to 12,288 dimensions (~1.5M parameters)
-  - Total: ~3 million parameters instead of ~150 million — a 50x savings
-- This is called a low-rank factorization
-  - The bottleneck at 128 dimensions forces the model to compress — to extract only the most important bits
-  - It's like squeezing information through a narrow pipe: only the most important content gets through
-- Each attention head has its own value-down and value-up matrices
-  - So different heads extract and contribute different types of information
+- Full 12,288→12,288 value matrix would be ~150M params per head — too expensive with 96 heads
+- Solution: low-rank factorization — value-down (12,288→128, ~1.5M params) then value-up (128→12,288, ~1.5M params) = 50x savings
+- 128-D bottleneck forces compression — only most essential information passes through
+- Each head has its own value-down/value-up matrices, extracting and contributing different info types
 
 ---
 
@@ -342,19 +274,11 @@ Below: all 96 value-up outputs summing together into one combined update per wor
 
 **Speaker notes:**
 
-- What we've described so far is a single attention head — one set of Q, K, V matrices learning one type of relationship
-  - But language has many types of relationships happening simultaneously
-  - Grammar, coreference, sentiment, topic tracking, temporal ordering, logical connections...
-- So the model runs 96 heads in parallel, each with completely separate Q, K, V matrices
-  - Each head independently learns to look for a different type of pattern
-  - One head might learn to connect subjects with verbs
-  - Another might learn pronoun resolution — figuring out that "it" in "The animal didn't cross the street because it was too tired" refers to "animal," not "street"
-  - Another might track whether we're talking about Harry Potter or Prince Harry
-- Nobody tells the heads what to look for — they self-organize during training
-  - Each head finds relationship patterns that help reduce prediction error
-- The output: all 96 heads produce their own proposed update to each word's embedding
-  - These updates all get summed together into one combined context update per word
-  - So each word is enriched from 96 different perspectives simultaneously
+- Single head = one type of relationship; language has many simultaneous relationship types (grammar, coreference, sentiment, etc.)
+- GPT-3: 96 heads per layer, each with separate Q/K/V matrices learning different patterns independently
+- Examples: subject-verb agreement, pronoun resolution ("it" → "animal" not "street"), entity disambiguation
+- Nobody tells heads what to look for — self-organize during training to reduce prediction error
+- All 96 heads produce proposed updates → summed into one combined context update per word (96 perspectives at once)
 
 ---
 
@@ -373,16 +297,10 @@ Below: all 96 value-up outputs summing together into one combined update per wor
 
 **Speaker notes:**
 
-- Implementation detail: all 96 value-up matrices are effectively stapled together into one large output matrix
-  - Rather than 96 separate matrix multiplications followed by a sum, it's one big matrix multiplication
-  - Mathematically equivalent, but more efficient on GPUs
-- The result is a single update vector per word
-  - This vector blends all 96 heads' contributions — grammar, coreference, sentiment, everything
-  - It gets added to the original embedding
-- Then the updated embedding flows into the MLP block
-  - Remember: attention handles relationships between words, MLP handles factual knowledge
-  - These two operations together form one Transformer layer
-- Then the whole thing repeats — another 95 times in GPT-3
+- All 96 value-up matrices stapled into one large output matrix — one big matrix multiply instead of 96 separate ones (GPU efficient)
+- Result: single update vector per word blending all 96 heads' contributions → added to original embedding
+- Updated embedding flows into MLP block (attention = relationships, MLP = knowledge) — together = one Transformer layer
+- Repeats 95 more times in GPT-3
 
 ---
 
@@ -403,18 +321,11 @@ Below: all 96 value-up outputs summing together into one combined update per wor
 
 **Speaker notes:**
 
-- The full pipeline: 96 layers, each with attention then MLP
-  - Each layer builds on the output of the previous one
-  - Early layers tend to handle simpler patterns — grammar, basic syntax
-  - Middle layers build up semantic understanding — who's who, what's related to what
-  - Later layers handle more abstract reasoning — inference, logical connections, prediction
-- The scale is staggering
-  - 96 heads per layer times 96 layers = **9,216 total attention operations**
-  - Each word gets analyzed from over 9,000 different perspectives as it flows through the network
-  - About 58 billion parameters are devoted to attention — one-third of the model
-  - About 116 billion parameters are in the MLP layers — two-thirds of the model
-- By the time a word reaches the final layer, its embedding has been updated by every relevant word in the context, from 9,216 different perspectives, and enriched with factual knowledge from 96 MLP blocks
-  - That's how "was" in "the murderer was" can encode an entire mystery novel's worth of clues
+- 96 layers: early = grammar/syntax, middle = semantic understanding, late = abstract reasoning/inference
+- 96 heads x 96 layers = 9,216 total attention operations — each word analyzed from 9,000+ perspectives
+- Attention: ~58B params (1/3); MLP: ~116B params (2/3)
+- By final layer, each word's vector has been updated from 9,216 perspectives + 96 MLP knowledge injections
+- That's how "was" in "the murderer was" encodes an entire novel's worth of clues
 
 ---
 
@@ -438,21 +349,11 @@ Attention didn't just change how AI understands language — it changed how effi
 
 **Speaker notes:**
 
-- Grant makes a crucial point: attention's success isn't just about the mechanism being clever
-  - It's about the mechanism being **parallelizable**
-- Before Transformers, the dominant language architecture was the RNN (recurrent neural network)
-  - RNNs process words one at a time, sequentially — word 1 feeds into word 2, which feeds into word 3...
-  - Information had to travel through the entire chain to connect distant words
-  - Over long sequences, information degraded — the "vanishing gradient" problem
-  - And because it's sequential, you can't parallelize it well — each step depends on the previous one
-- Attention flips this completely
-  - Every word can attend to every other word directly — no chain, no degradation
-  - All the dot products (query times key) can be computed simultaneously on a GPU
-  - This is why Transformers can scale to billions of parameters and train on billions of examples
-- The insight: **scale + parallelism = breakthrough**
-  - The attention mechanism is elegant, but what made it world-changing is that GPUs can run it at enormous scale
-  - You couldn't do this with RNNs — they're inherently sequential
-  - Transformers turned language AI from a serial bottleneck into a parallel computation — and that unlocked everything
+- Attention's success = parallelizability, not just cleverness
+- Before: RNNs processed sequentially (word by word) — slow, info degrades over distance (vanishing gradient), can't parallelize
+- Attention: every word attends to every other directly — all dot products computed simultaneously on GPU
+- Scale + parallelism = breakthrough; Transformers turned language AI from serial bottleneck to parallel computation
+- RNNs can't scale; Transformers can → billions of parameters, billions of examples → that unlocked everything
 
 ---
 
@@ -484,20 +385,11 @@ What we covered:
 
 **Speaker notes:**
 
-- Quick recap of the full attention mechanism
-  - The problem: words start with identical embeddings regardless of context — attention fixes that
-  - Each word generates a query (what it's looking for) and a key (what it offers)
-  - Dot products between queries and keys produce relevance scores
-  - Softmax normalizes those scores into attention weights
-  - Value vectors carry the actual information — weighted by attention scores, then added to the original embedding
-  - 96 heads run in parallel, each learning different relationship types
-  - 96 layers repeat the whole process — 9,216 total attention operations
-- The big picture: attention is what turns flat, context-free embeddings into rich, contextual representations
-  - It's how "king" becomes "a specific Scottish king from Macbeth"
-  - It's how "was" in a mystery novel encodes the entire plot's worth of clues
-  - It's the core innovation that made modern AI possible
-- Combined with the MLP layers (which store factual knowledge), attention forms the complete Transformer architecture
-  - Attention handles relationships. MLPs handle knowledge. Together, they produce intelligence.
+- Problem: identical embeddings regardless of context → attention fixes by letting words update each other
+- Pipeline: query ("looking for?") + key ("I offer?") → dot product → softmax → attention weights → value transfer → add to embedding
+- 96 heads in parallel x 96 layers = 9,216 attention operations per word
+- Attention turns flat embeddings into rich contextual representations ("king" → "Scottish king in Macbeth")
+- Attention = relationships; MLP = knowledge; together = the complete Transformer architecture
 
 ---
 

@@ -41,16 +41,9 @@ Every major AI you've heard of — ChatGPT, Claude, Gemini, Llama — is a Trans
 
 **Speaker notes:**
 
-- GPT is an acronym — break it down so the letters actually mean something
-  - **Generative**: it creates new text, token by token
-  - **Pre-trained**: billions of gradient descent steps already happened before you ever opened the app
-  - **Transformer**: the architecture — the wiring diagram — that made large-scale language AI possible
-- The Transformer architecture came from a 2017 Google paper titled "Attention Is All You Need"
-  - Arguably the most consequential machine learning paper ever published
-  - Before Transformers, language AI existed but couldn't scale — Transformers changed that
-- Every major AI model — ChatGPT, Claude, Gemini, Llama — is built on this same architecture
-  - Different training data, different fine-tuning, different companies
-  - Same fundamental blueprint under the hood
+- Generative = creates new text token by token; Pre-trained = billions of gradient steps already done; Transformer = the architecture
+- 2017 Google paper "Attention Is All You Need" — arguably most consequential ML paper ever; enabled language AI to scale
+- Every major model (ChatGPT, Claude, Gemini, Llama) uses this same architecture — different data/tuning, same blueprint
 
 ---
 
@@ -76,12 +69,9 @@ Every major AI you've heard of — ChatGPT, Claude, Gemini, Llama — is a Trans
 **Speaker notes:**
 
 - This slide is the roadmap — everything that follows unpacks one piece of this pipeline
-  - Don't worry about memorizing it now; we'll walk through each step
-- The key takeaway: text goes in as words, gets converted to numbers, flows through many layers of processing, and comes out as a prediction for the next word
-- GPT-3 repeats the attention+MLP pair 96 times
-  - Each pass refines the model's understanding of what the text means and what should come next
-- After all 96 layers, the final vector gets converted back into a probability distribution across ~50,000 possible next words
-  - The model samples one word, appends it, and starts the whole pipeline again for the next word
+- Text → numbers → 96 layers of processing → probability distribution over ~50,000 next words
+- GPT-3 repeats attention+MLP pair 96 times; each pass refines understanding
+- Model samples one word, appends it, restarts pipeline for the next word
 
 ---
 
@@ -99,15 +89,9 @@ Every major AI you've heard of — ChatGPT, Claude, Gemini, Llama — is a Trans
 
 **Speaker notes:**
 
-- Quick prerequisite recap — four ideas that underpin everything
-  - Every input gets converted to an array of numbers — pixels, audio samples, token IDs, doesn't matter
-  - Layers are just functions: numbers in, numbers out
-  - The core math operation is the weighted sum — multiply each input by a weight, add them up
-    - This is matrix multiplication — GPUs are built to do this fast
-  - Non-linear activation functions (like ReLU) are critical
-    - Without them, stacking layers would be pointless — multiple linear layers collapse into a single linear layer
-    - The non-linearity is what lets deep networks learn complex patterns
-- If any of this feels fuzzy from Session 0, that's fine — the concepts will reinforce as we go
+- Four building blocks: (1) inputs as numbers, (2) layers = functions (numbers in/out), (3) weighted sums via matrix multiply (GPU-optimized), (4) non-linear activations (ReLU) prevent layer collapse
+- Without non-linearity, stacking layers is pointless — multiple linear layers collapse into one
+- All of deep learning is these four ideas composed at scale
 
 ---
 
@@ -128,16 +112,10 @@ The architecture is not mysterious. It's the same building blocks — matrix mul
 
 **Speaker notes:**
 
-- Put the scale in perspective
-  - Our handwritten digit network: 13,002 parameters
-  - GPT-3: 175 billion — that's 13.5 million times bigger
-- But the math is the same — weighted sums, biases, activation functions, gradient descent
-  - Nothing fundamentally new, just vastly more of it
-- The 175 billion parameters live in about 28,000 matrices
-  - Those matrices fall into 8 categories — we'll meet each one as we walk through the architecture
-  - Embedding, unembedding, query, key, value, output, MLP up-projection, MLP down-projection
-- The fact that it's organized into just 8 types of matrix is actually reassuring
-  - It means the architecture is highly repetitive — learn the pattern once, and you understand the whole thing
+- Our digit network: 13,002 parameters; GPT-3: 175 billion — 13.5 million times bigger, same math
+- 175B parameters organized into ~28,000 matrices falling into just 8 categories
+- 8 matrix types: embedding, unembedding, query, key, value, output, MLP up-projection, MLP down-projection
+- Architecture is highly repetitive — learn the pattern once and you understand the whole thing
 
 ---
 
@@ -160,18 +138,9 @@ Below: each token mapped to a numeric ID (e.g., "To" → 2514, " date" → 3128,
 
 **Speaker notes:**
 
-- Neural networks only understand numbers, so step one is converting text to numbers
-  - The process is called **tokenization** — chopping text into chunks called tokens
-- Tokens are usually whole words, but not always
-  - Common words like "the" or "of" are single tokens
-  - Less common or longer words get split — "cleverest" becomes three tokens: "cle" + "ver" + "est"
-  - This keeps the vocabulary manageable (~50,257 tokens) while handling any text
-- Each token has a unique ID number — like a barcode
-  - From this point forward, the model works purely with these ID numbers, never with raw text
-- There's a limit on how many tokens the model can process at once — the **context window**
-  - GPT-3: 2,048 tokens
-  - Modern models (GPT-4, Claude): 100,000+ tokens
-  - But the concept is the same — a fixed window of text the model can "see"
+- Tokenization = chopping text into chunks; common words are single tokens, rare/long words get split ("cleverest" → "cle"+"ver"+"est")
+- Vocabulary: ~50,257 tokens, each with a unique numeric ID — model never sees raw text after this step
+- Context window = max tokens processed at once: GPT-3 = 2,048; modern models = 100,000+
 
 ---
 
@@ -190,17 +159,9 @@ Below: each token mapped to a numeric ID (e.g., "To" → 2514, " date" → 3128,
 
 **Speaker notes:**
 
-- Once text is tokenized, each token ID gets looked up in a giant table called the **embedding matrix**
-  - Think of it as a dictionary where every word maps to a list of 12,288 numbers
-  - Those 12,288 numbers define where that word lives in a high-dimensional space
-- For GPT-3, the embedding matrix has about 617 million parameters
-  - 50,257 tokens times 12,288 dimensions per token
-  - That's over half a billion numbers — just for converting words to vectors
-  - And that's less than half a percent of the model's total 175 billion parameters
-- Nobody programs these embeddings by hand
-  - They start as random numbers and self-organize during training
-  - Billions of gradient descent steps shape them into a meaningful structure
-  - The structure that emerges is remarkable — which we'll see on the next slide
+- Embedding matrix (W_E) = lookup table: each token ID maps to a vector of 12,288 numbers defining its position in high-dimensional space
+- Size: 50,257 tokens x 12,288 dims = ~617M parameters — less than 0.5% of GPT-3's total 175B
+- Embeddings start random, self-organize during training via gradient descent — the structure that emerges is remarkable
 
 ---
 
@@ -229,21 +190,10 @@ Nobody programmed "king = male, royal, singular." The model discovered these abs
 
 **Speaker notes:**
 
-- This is one of the most remarkable results in machine learning
-  - Take the vector for "woman," subtract the vector for "man" — you get a direction that represents gender
-  - Add that direction to "king" and you land near "queen"
-  - Add it to "uncle" and you land near "aunt"
-  - The model discovered that gender is a consistent direction in its embedding space
-- It works for other concepts too
-  - "Italy" minus "Germany" gives a direction representing Italian-ness vs. German-ness
-  - Take "Hitler" (associated with Germany), add the Italy direction — land near "Mussolini"
-  - The model has encoded nationality and historical role as separate directions
-- Even plurality has a direction
-  - "cats" minus "cat" produces a vector that, when you dot-product it with "one," "two," "three," "four," gives *increasing* values
-  - The model learned that "four" is more plural than "one"
-- Nobody hand-labeled any of this — it all emerged from training on text
-  - Words that appear in similar contexts end up near each other
-  - The structure of human language gets encoded as geometry in 12,288-dimensional space
+- woman - man = gender direction; add it to "king" → land near "queen"; add to "uncle" → "aunt"
+- Italy - Germany = nationality direction; Hitler + that direction → lands near Mussolini
+- cats - cat = plurality direction; dot product with "one"/"two"/"three"/"four" gives increasing values
+- Nobody labeled any of this — emerged from training; words in similar contexts cluster; language structure becomes geometry in 12,288-D space
 
 ---
 
@@ -265,18 +215,10 @@ Nobody programmed "king = male, royal, singular." The model discovered these abs
 
 **Speaker notes:**
 
-- The dot product is the single most important operation in Transformers
-  - It measures how aligned two vectors are — how much they point in the same direction
-- Intuition:
-  - Two vectors pointing the same way → large positive dot product → "these are similar"
-  - Perpendicular vectors → dot product near zero → "these are unrelated"
-  - Opposite directions → large negative dot product → "these are opposites"
-- This is how the model compares anything to anything
-  - "Is this word related to that word?" → dot product of their embeddings
-  - "Does this query match that key?" → dot product (we'll see this in attention)
-  - "How likely is this next word?" → dot product in the unembedding step
-- It's fast, parallelizable, and mathematically elegant
-  - GPUs can compute millions of dot products simultaneously
+- Dot product = single most important operation in Transformers; measures how aligned two vectors are
+- Same direction → large positive (similar); perpendicular → zero (unrelated); opposite → large negative (opposites)
+- Used everywhere: word similarity, query-key matching in attention, next-word scoring in unembedding
+- Fast and parallelizable — GPUs compute millions of dot products simultaneously
 
 ---
 
@@ -300,17 +242,10 @@ Nobody programmed "king = male, royal, singular." The model discovered these abs
 
 **Speaker notes:**
 
-- GPT-3 can process up to 2,048 tokens at a time — that's its context window
-  - Modern models have much larger windows, but the principle is the same
-- The key idea: vectors don't stay static as they flow through the 96 layers
-  - They start as generic dictionary-style embeddings
-  - Each attention layer lets surrounding words update and enrich the vector
-  - By the end, a vector that started as "king" might encode an incredibly specific meaning
-- Grant's example: the word "king" entering a passage about Macbeth
-  - Starts as a generic royalty concept
-  - After attention pulls in context: becomes a Scottish king, who murdered his predecessor, written by Shakespeare, circa 1606, and the passage is building toward the psychological consequences
-  - All encoded in a single vector of 12,288 numbers
-- This is what makes Transformers powerful — the ability to progressively enrich meaning through context
+- Context window: GPT-3 = 2,048 tokens; modern models much larger but same principle
+- Vectors don't stay static — start as generic embeddings, get progressively enriched through 96 layers of attention
+- Example: "king" starts as generic royalty → after attention in Macbeth context becomes "Scottish king who murdered predecessor, Shakespeare, ~1606, building toward psychological consequences"
+- All encoded in a single 12,288-number vector — progressive context enrichment is what makes Transformers powerful
 
 ---
 
@@ -329,18 +264,9 @@ Nobody programmed "king = male, royal, singular." The model discovered these abs
 
 **Speaker notes:**
 
-- After 96 layers of attention and MLP processing, we have a final vector — 12,288 numbers packed with contextual meaning
-  - Now we need to convert that back into a prediction: "What word comes next?"
-- The unembedding matrix does this
-  - It's essentially the reverse of the embedding step
-  - Multiply the final vector by this matrix and you get ~50,257 scores, one per vocabulary token
-  - Higher score = the model thinks that token is more likely to come next
-- The unembedding matrix is another ~617 million parameters
-  - Combined with the embedding matrix, that's about 1.2 billion parameters just for the input/output conversion
-  - The remaining ~174 billion parameters are in the 96 layers of attention and MLP blocks
-- The raw scores coming out of the unembedding matrix are called **logits**
-  - They're not yet probabilities — they can be any number, positive or negative
-  - To turn them into probabilities, we need one more step: softmax
+- Unembedding matrix (W_U) = reverse of embedding: multiply final vector → ~50,257 scores, one per token; higher = more likely next
+- ~617M parameters; combined with embedding = ~1.2B just for input/output conversion; remaining ~174B in the 96 attention+MLP layers
+- Raw output scores = logits (arbitrary numbers, positive or negative) — not yet probabilities; need softmax to convert
 
 ---
 
@@ -359,18 +285,9 @@ Nobody programmed "king = male, royal, singular." The model discovered these abs
 
 **Speaker notes:**
 
-- Logits are raw scores — they can be any number
-  - They're not probabilities yet — they don't sum to 1, and they can be negative
-- Softmax fixes that — it converts any list of numbers into a valid probability distribution
-  - Every output is between 0 and 1
-  - All outputs sum to exactly 1.0
-- The key behavior: softmax amplifies differences
-  - If one logit is much larger than the rest, it dominates the probability distribution
-  - Small differences in logits can translate to big differences in probability
-  - This is by design — the model is usually fairly confident about what comes next
-- After softmax, you have a probability for every token in the vocabulary
-  - "Paris" might be 68%, "the" might be 4%, "a" might be 3%, and so on
-  - The model samples from this distribution to pick the next token
+- Softmax: raise e to each logit, divide by total — converts arbitrary numbers into probabilities summing to 1.0
+- Key behavior: amplifies differences — largest logit dominates the distribution; small logit gaps become big probability gaps
+- After softmax: probability for every token ("Paris" 68%, "the" 4%, "a" 3%) — model samples from this distribution
 
 ---
 
@@ -398,21 +315,11 @@ Temperature is like a confidence dial. Turn it down and the model only picks saf
 
 **Speaker notes:**
 
-- Temperature is a single number that controls how random the model's choices are
-  - Mechanically: divide all logits by T before applying softmax
-  - Low T → differences between logits get amplified → the top choice dominates
-  - High T → differences get flattened → all choices become more equally likely
-- At T = 0, the model is completely deterministic
-  - It always picks the single most likely next token
-  - Safe and consistent, but repetitive and boring
-  - Grant's example: "Once upon a time" at T=0 always produces some variant of Goldilocks — the most statistically common fairy tale opening
-- At high temperature, the model takes risks
-  - It's more willing to pick lower-probability tokens
-  - Can produce creative, surprising text
-  - But can also spiral into nonsense — Grant's example starts with "a South Korean web artist" and quickly degenerates into incoherent text
-- This is why sometimes ChatGPT gives you the same answer twice and sometimes it's different
-  - The temperature setting determines how much randomness is in the sampling
-- Most production systems use moderate temperature — enough creativity to be useful, not so much that it's unreliable
+- Mechanically: divide all logits by T before softmax; low T amplifies gaps (top choice dominates), high T flattens (all choices equalize)
+- T=0: deterministic, always picks most likely token — safe but repetitive; "Once upon a time" always → Goldilocks variant
+- High T: picks lower-probability tokens — creative but can spiral into nonsense ("South Korean web artist" → incoherent)
+- Why ChatGPT sometimes gives same answer twice, sometimes different — temperature controls sampling randomness
+- Production systems use moderate T — creative enough to be useful, not so much it's unreliable
 
 ---
 
@@ -440,20 +347,10 @@ Temperature is like a confidence dial. Turn it down and the model only picks saf
 
 **Speaker notes:**
 
-- This is the complete Transformer pipeline — it's surprisingly repetitive
-  - The same pair of operations — attention then MLP — runs 96 times
-  - Each pass refines the model's understanding
-- Attention is where words communicate with each other
-  - "Which other words are relevant to my meaning right now?"
-  - This is how context gets incorporated — how "king" becomes "Scottish king in Macbeth"
-  - We'll do a full deep-dive on attention in the next chapter
-- MLP is where factual knowledge gets injected
-  - Each word gets processed independently — no inter-word communication
-  - "Is this vector encoding Michael Jordan? If so, add basketball, Chicago Bulls, #23"
-  - About two-thirds of GPT-3's parameters live in the MLP layers
-- After all 96 rounds, the final vector passes through unembedding and softmax
-  - Produces a probability distribution over ~50,000 possible next tokens
-  - The model samples one, appends it, and starts the whole pipeline again
+- Same pair of operations (attention → MLP) repeated 96 times; each pass refines understanding
+- Attention = words communicate with each other ("which words are relevant to my meaning?") — context incorporation
+- MLP = factual knowledge injection per word independently ("Michael Jordan? → add basketball, Bulls, #23") — 2/3 of parameters live here
+- After 96 rounds: unembedding → softmax → probability distribution over ~50K tokens → sample one → repeat pipeline
 
 ---
 
@@ -478,19 +375,11 @@ Temperature is like a confidence dial. Turn it down and the model only picks saf
 
 **Speaker notes:**
 
-- Let's see where all 175 billion parameters actually live
-  - Embedding and unembedding: ~1.2 billion combined — less than 1% of the model
-    - These are the "dictionary" layers that convert between words and vectors
-  - Attention: ~58 billion — about one-third of the model
-    - Query, key, value, and output matrices across 96 layers with 96 heads each
-    - This is where context understanding happens
-  - MLP: ~116 billion — about two-thirds of the model
-    - Up-projection and down-projection matrices across 96 layers
-    - This is where factual knowledge is stored
-- The surprise: most of the model is MLP, not attention
-  - Attention gets all the headlines, but the majority of parameters are in the knowledge-storage layers
-- All 175 billion of these numbers were learned through gradient descent
-  - The same algorithm we covered in Session 0 — just at mind-boggling scale
+- Embedding + unembedding: ~1.2B combined (<1%) — dictionary layers converting words ↔ vectors
+- Attention (Q, K, V, O across 96 layers x 96 heads): ~58B (33%) — context understanding
+- MLP (up/down projection across 96 layers): ~116B (66%) — factual knowledge storage
+- Surprise: most of the model is MLP, not attention — attention gets headlines but MLP stores knowledge
+- All 175B numbers learned via gradient descent — same algorithm from Session 0, mind-boggling scale
 
 ---
 
@@ -516,18 +405,10 @@ What we covered:
 
 **Speaker notes:**
 
-- Quick recap of the full pipeline
-  - Text comes in, gets tokenized into chunks, each chunk becomes a vector of 12,288 numbers
-  - Those vectors flow through 96 layers of attention (words talking to each other) and MLP (knowledge injection)
-  - The final vector gets converted back to a probability distribution over ~50,000 possible next words
-  - Temperature controls how much randomness goes into the selection
-- Key numbers to remember:
-  - 50,257 tokens in the vocabulary
-  - 12,288 dimensions per embedding vector
-  - 96 layers of attention + MLP
-  - 175 billion total parameters
-- Next up: we go deep on **attention** — the mechanism that lets words understand context
-  - That's the heart of why Transformers work, and it's the subject of Chapter 7
+- Full pipeline: text → tokenize → embed (12,288-D vectors) → 96 layers attention+MLP → unembed → softmax → sample next token
+- Key numbers: 50,257 tokens, 12,288 dimensions, 96 layers, 175 billion parameters
+- Temperature controls randomness in token selection
+- Next chapter: deep-dive on attention — the mechanism that lets words understand context
 
 ---
 
