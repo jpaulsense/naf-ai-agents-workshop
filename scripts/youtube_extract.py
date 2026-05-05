@@ -63,16 +63,9 @@ def fetch_transcript(video_id: str) -> str | None:
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
 
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-
-        # Try English first, then any available language
-        try:
-            transcript = transcript_list.find_transcript(["en"])
-        except Exception:
-            transcript = transcript_list.find_generated_transcript(["en"])
-
-        segments = transcript.fetch()
-        full_text = " ".join(seg.text for seg in segments)
+        ytt_api = YouTubeTranscriptApi()
+        transcript = ytt_api.fetch(video_id)
+        full_text = " ".join(snippet.text for snippet in transcript)
         return full_text
 
     except Exception as e:

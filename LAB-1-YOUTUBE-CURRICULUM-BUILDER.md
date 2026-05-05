@@ -45,9 +45,11 @@ The `transcripts/` folder in this repository contains 9 pre-extracted video tran
 
 **To use these:** Open 3-4 transcript files that interest you. You'll paste their content into Claude/ChatGPT in Step 3.
 
-### Option B: Run the Extraction Script (advanced)
+### Option B: Run the Extraction Script (local machines only)
 
-If you have an `ANTHROPIC_API_KEY` configured (check your `.env` file), you can extract transcripts from any YouTube videos:
+> **Important:** This option does NOT work from GitHub Codespaces. YouTube blocks transcript requests from cloud provider IPs (Azure, AWS, etc.). Use Option A if you're in a Codespace.
+
+If you're running locally and have an `ANTHROPIC_API_KEY` configured (check your `.env` file), you can extract transcripts from any YouTube videos:
 
 1. Edit `videos.txt` — add 1-5 YouTube URLs (one per line)
 2. Run: `python scripts/youtube_extract.py videos.txt`
@@ -55,7 +57,7 @@ If you have an `ANTHROPIC_API_KEY` configured (check your `.env` file), you can 
 
 This uses the YouTube Transcript API to fetch captions, then Claude AI to extract structured knowledge. It produces both JSON (discrete facts) and YAML (contextual narratives).
 
-> **Note:** Option B requires an API key and takes 2-3 minutes to run. If you're unsure, start with Option A — you can always try Option B later.
+> **Note:** Option B requires a local machine, an API key, and takes 2-3 minutes to run. If you're unsure, start with Option A.
 
 ---
 
@@ -190,9 +192,11 @@ Before you move on, think about these questions:
 
 ---
 
-## Bonus: Run the Structured Extraction Script
+## Bonus: Run the Structured Extraction Script (local only)
 
-If you finished early and want to see how the automated pipeline works, try running the full extraction script:
+> **Note:** This only works on a local machine, not in Codespaces (YouTube blocks cloud IPs).
+
+If you finished early and want to see how the automated pipeline works on your own machine, try running the full extraction script:
 
 ```bash
 # Edit videos.txt with YouTube URLs you're interested in
