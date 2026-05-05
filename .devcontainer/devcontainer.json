@@ -14,7 +14,7 @@
     }
   },
   // Install dependencies using uv, auto-configure API key from Codespace secret
-  "postCreateCommand": "pip install --upgrade pip && pip install uv && uv sync && playwright install chromium && if [ -n \"${ANTHROPIC_API_KEY}\" ]; then echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}\" > .env && echo '✅ Environment ready! API key configured.'; else cp .env.template .env && echo '⚠️  No API key found. Edit .env to add your ANTHROPIC_API_KEY'; fi",
+  "postCreateCommand": "pip install --upgrade pip && pip install uv && uv sync; playwright install chromium || true; if [ -n \"${ANTHROPIC_API_KEY}\" ]; then echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}\" > .env && echo '✅ Environment ready! API key configured.'; else cp .env.template .env && echo '⚠️  No API key found. Edit .env to add your ANTHROPIC_API_KEY'; fi",
   "customizations": {
     "vscode": {
       "extensions": [
