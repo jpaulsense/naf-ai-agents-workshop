@@ -196,7 +196,7 @@ def extract_structure(text: str, mode: str) -> dict:
     """Send text to Claude and get structured JSON back."""
     prompt = PROMPTS[mode]
 
-    llm = ChatAnthropic(model="claude-haiku-4-5-20251001", temperature=0, max_tokens=4096)
+    llm = ChatAnthropic(model="claude-haiku-4-5-20251001", temperature=0, max_tokens=8192)
 
     # Truncate if too long (Haiku context is 200k but we want fast responses)
     max_chars = 50000
@@ -222,9 +222,27 @@ def extract_structure(text: str, mode: str) -> dict:
     try:
         structured = json.loads(content)
         return structured
-    except json.JSONDecodeError as e:
-        print(f"  WARNING: Claude returned invalid JSON. Saving raw response.")
-        return {"raw_response": content, "parse_error": str(e)}
+    except json.JSONDecodeError:
+        # Try to repair truncated JSON by closing open structures
+        repaired = content
+        # Count open braces/brackets
+        opens = repaired.count("{") - repaired.count("}")
+        open_brackets = repaired.count("[") - repaired.count("]")
+        # Truncate to last complete entry (find last complete object)
+        if repaired.rfind("},") > 0:
+            repaired = repaired[:repaired.rfind("},") + 1]
+        elif repaired.rfind("}") > 0:
+            repaired = repaired[:repaired.rfind("}") + 1]
+        # Close remaining structures
+        repaired += "]" * open_brackets + "}" * opens
+        try:
+            structured = json.loads(repaired)
+            print(f"  NOTE: Response was truncated — repaired JSON (some data may be incomplete)")
+            return structured
+        except json.JSONDecodeError as e:
+            print(f"  WARNING: Claude returned invalid JSON that could not be repaired.")
+            print(f"  TIP: Try running again — the response may have been cut off by network issues.")
+            return {"raw_response": content, "parse_error": str(e)}
 
 
 # ---------------------------------------------------------------------------
