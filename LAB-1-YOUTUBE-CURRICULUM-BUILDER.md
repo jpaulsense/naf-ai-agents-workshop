@@ -1,257 +1,275 @@
-# Lab 1 — YouTube → Training Curriculum Builder
+# Lab 1 — Unstructured → Structured → Output
 
 ## What You'll Build
 
-In this lab, you'll use AI to turn YouTube video content into a complete training curriculum — study guide, lesson sequence, and quiz included. You'll do it in about 30 minutes using a pattern that would take days to do manually.
+In this lab, you'll take raw, unstructured content — Wikipedia articles, news feeds, PDFs, or transcripts — and use AI to transform it into a polished, interactive deliverable. You choose the topic. You choose the format. The AI does the heavy lifting.
 
-**Duration:** 30-45 minutes (self-paced)
-**What you need:** A browser with [claude.ai](https://claude.ai) or [chat.openai.com](https://chat.openai.com) open
+**Duration:** 30-60 minutes (self-paced)
+**What you need:** Your Codespace terminal and a topic you care about
 
 ## What You'll Learn
 
-- How AI search works differently from Google (semantic/meaning-based vs. keyword)
+- How to fetch content from multiple source types (APIs, feeds, documents)
 - The difference between raw content and structured data
-- How to prompt AI to transform structured data into useful outputs
+- How to use AI to extract meaning and organize information
+- How to generate interactive outputs from structured data
 - The real-world pattern: **Fetch → Structure → Create**
 
 ```
 FETCH  →  STRUCTURE  →  CREATE
-(get content)  (extract key info)  (build something useful)
+(get raw content)  (AI extracts meaning)  (build something useful)
 ```
 
-This three-step pattern is behind almost every useful AI application. YouTube videos are today's example, but the same steps apply to any unstructured content — incident reports, regulations, meeting notes, maintenance logs.
+This three-step pattern is behind almost every useful AI application. The same steps apply whether you're building training curricula, intelligence briefings, decision guides, compliance checklists, or operational summaries.
 
 ---
 
-## Step 1: Choose Your Path (2 min)
+## The Pipeline
 
-This lab gives you two options for getting source material:
-
-### Option A: Use Pre-Loaded Transcripts (recommended)
-
-The `transcripts/` folder in this repository contains 9 pre-extracted video transcripts from the 3Blue1Brown "Neural Networks" series. These cover:
-
-| File | Topic |
-|------|-------|
-| `01-aircAruvnKk.md` | What is a neural network? |
-| `02-IHZwWFHWa-w.md` | Gradient descent |
-| `03-Ilg3gGewQ5U.md` | Backpropagation |
-| `04-tIeHLnjs5U8.md` | Backpropagation calculus |
-| `05-LPZh9BOjkQs.md` | GPT (Generative Pre-trained Transformer) |
-| `06-wjZofJX0v4M.md` | Attention in transformers |
-| `07-eMlx5fFNoYc.md` | How LLMs might store facts |
-| `08-9-Jl0dxWQs8.md` | Transformers (visual intro) |
-| `09-iv-5mZ_9CPY.md` | Word embeddings |
-
-**To use these:** Open 3-4 transcript files that interest you. You'll paste their content into Claude/ChatGPT in Step 3.
-
-### Option B: Run the Extraction Script (local machines only)
-
-> **Important:** This option does NOT work from GitHub Codespaces. YouTube blocks transcript requests from cloud provider IPs (Azure, AWS, etc.). Use Option A if you're in a Codespace.
-
-If you're running locally and have an `ANTHROPIC_API_KEY` configured (check your `.env` file), you can extract transcripts from any YouTube videos:
-
-1. Edit `videos.txt` — add 1-5 YouTube URLs (one per line)
-2. Run: `python scripts/youtube_extract.py videos.txt`
-3. Find your structured output in `lab1_output/`
-
-This uses the YouTube Transcript API to fetch captions, then Claude AI to extract structured knowledge. It produces both JSON (discrete facts) and YAML (contextual narratives).
-
-> **Note:** Option B requires a local machine, an API key, and takes 2-3 minutes to run. If you're unsure, start with Option A.
-
----
-
-## Step 2: Understand the Structure (5 min)
-
-Before you build your curriculum, take a moment to understand *why* structured data matters.
-
-Open one of the transcript files (e.g., `transcripts/01-aircAruvnKk.md`). Scroll through it. Notice:
-- It's a wall of timestamped text
-- Finding specific facts requires reading the whole thing
-- There's no organization — topics blend together
-
-Now imagine trying to build a training curriculum from 4 of these raw transcripts. You'd have to:
-1. Read all of them end to end
-2. Mentally extract the key concepts
-3. Figure out how they relate to each other
-4. Organize them into a logical sequence
-5. Write up summaries, definitions, and quiz questions
-
-That's hours of work. Instead, you're going to hand this to AI and let it do steps 1-4 in seconds. Your job is step 5: reviewing, correcting, and approving the output.
-
-**This is the core insight:** AI is a *tool*, not a replacement. It does 90% of the work in 30 seconds, but you still need a human to review, correct, and approve. The value is in the speed — not in blind trust.
-
----
-
-## Step 3: Build Your Curriculum (15-20 min)
-
-This is the main event. You'll paste transcript content into Claude or ChatGPT along with a structured prompt, and it will generate a complete curriculum package.
-
-### 3.1 — Gather your source material
-
-Pick 3-4 transcripts from the `transcripts/` folder (or use your `lab1_output/` files from Option B). Copy the full content of each.
-
-### 3.2 — Open your AI tool
-
-Go to [claude.ai](https://claude.ai) or [chat.openai.com](https://chat.openai.com) in your browser.
-
-### 3.3 — Paste this prompt
-
-Copy the entire block below into your AI chat. Replace `[TOPIC]` with your actual topic (e.g., "neural networks and deep learning"). Then paste your transcript content where indicated at the bottom.
+You have three scripts that form a pipeline. Each one does one job:
 
 ```
-I have transcripts from several YouTube videos on [TOPIC].
-Using ONLY the content from these transcripts, create a training
-curriculum package:
-
-## 1. CURRICULUM OUTLINE
-- Organize the content into 3-5 logical modules, sequenced from
-  foundational to advanced
-- Each module should have: a title, learning objective (one sentence),
-  and 3-5 key topics covered
-- Note which video(s) each module draws from
-
-## 2. ONE-PAGE STUDY GUIDE
-- Key definitions and terminology (bulleted list)
-- Core concepts explained in 1-2 sentences each
-- "Common misconceptions" section (things people get wrong)
-- "Key takeaways" — the 5 most important things to remember
-
-## 3. KNOWLEDGE CHECK (10 questions)
-- Mix of multiple choice (7) and short answer (3)
-- Include the correct answer and a brief explanation for each
-- Questions should test understanding, not memorization
-- Range from basic recall to applied scenarios
-
-## 4. SOURCES
-- List each video used: title and video ID
-- Note which curriculum modules each video contributed to
-
-Format everything in clean markdown with clear headers.
-
----
-
-VIDEO TRANSCRIPTS:
-
-[PASTE YOUR TRANSCRIPTS HERE]
+scripts/fetch_source.py      → Gets raw text from a source
+scripts/extract_structure.py → Sends text to Claude, gets structured JSON
+scripts/build_output.py      → Renders JSON into interactive HTML
 ```
 
-### 3.4 — Review the output
-
-Once the AI generates your curriculum, read through it critically:
-
-- **Accuracy:** Did it get the facts right? Are definitions correct?
-- **Completeness:** Did it miss any major concepts from the videos?
-- **Sequence:** Does the module order make sense? Would a learner follow this progression?
-- **Quiz quality:** Do the questions test real understanding, or just surface-level recall?
-- **Hallucinations:** Did it add information that *wasn't* in the transcripts?
-
-Mark anything that looks wrong or suspicious. This is the "human in the loop" step.
+You can run them one at a time, or chain them together. By the end, you'll have an interactive HTML file you can open in your browser.
 
 ---
 
-## Step 4: Iterate and Improve (5-10 min)
+## Step 1: Choose Your Source (5 min)
 
-Your first output probably isn't perfect. Here are some follow-up prompts to try:
+Pick a topic and a source type. Here are your options:
 
-**If the output is too generic:**
-> "Be more specific — use exact terminology, examples, and details from the video transcripts. Don't add information that isn't in the sources."
+### Wikipedia — Any topic you can think of
 
-**If the study guide is too short:**
-> "Expand the study guide to include at least 15 key terms and 10 core concepts. Pull directly from the transcript content."
+```bash
+python scripts/fetch_source.py wikipedia "Incident Command System"
+python scripts/fetch_source.py wikipedia "Drone warfare"
+python scripts/fetch_source.py wikipedia "Supply chain management"
+python scripts/fetch_source.py wikipedia "Cybersecurity"
+```
 
-**If you suspect hallucinated content:**
-> "Review your output against the source transcripts. Flag any claims that aren't directly supported by the video content, and remove them."
+### RSS News Feeds — Current events
 
-**If you want a different format:**
-> "Reformat the curriculum as a 1-week training plan with daily objectives, reading assignments (video segments), and daily quizzes of 3 questions each."
+```bash
+python scripts/fetch_source.py rss "https://feeds.bbci.co.uk/news/world/rss.xml"
+python scripts/fetch_source.py rss "https://feeds.bbci.co.uk/news/technology/rss.xml"
+python scripts/fetch_source.py rss "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+```
 
-**If you want to go deeper on one module:**
-> "Expand Module [X] into a detailed 30-minute lesson plan with: an opening hook, 3 teaching points with examples, a practice activity, and a summary."
+### PDF Documents — Government docs, manuals, regulations
+
+```bash
+python scripts/fetch_source.py pdf "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf"
+```
+
+Any publicly accessible PDF URL works. Try finding documents relevant to your job — regulations, frameworks, policy documents.
+
+### Local Files — Pre-loaded transcripts
+
+```bash
+python scripts/fetch_source.py file "transcripts/01-aircAruvnKk.md"
+python scripts/fetch_source.py file "transcripts/05-LPZh9BOjkQs.md"
+```
+
+The `transcripts/` folder has 9 pre-loaded video transcripts on neural networks and AI.
 
 ---
 
-## Step 5: Reflect (5 min)
+After running `fetch_source.py`, your raw content is saved in `lab1_output/raw/`. Check what you got:
+
+```bash
+ls lab1_output/raw/
+```
+
+---
+
+## Step 2: Choose Your Output Mode (2 min)
+
+Now decide what you want to BUILD from your source material. You have three options:
+
+| Mode | Best for | What you get |
+|------|----------|--------------|
+| `curriculum` | Training material, study guides | Modules, terminology, study guide, interactive quiz |
+| `briefing` | News, intelligence, situation reports | Timeline, actors, threats, recommendations |
+| `guide` | Manuals, procedures, regulations | Interactive decision tree with branching paths |
+
+---
+
+## Step 3: Extract Structure (2-3 min)
+
+Run the extraction script on your raw text file. Replace the filename with whatever `fetch_source.py` created in `lab1_output/raw/`:
+
+```bash
+# For training material:
+python scripts/extract_structure.py lab1_output/raw/YOUR_FILE.txt --mode curriculum
+
+# For a news briefing:
+python scripts/extract_structure.py lab1_output/raw/YOUR_FILE.txt --mode briefing
+
+# For an interactive decision guide:
+python scripts/extract_structure.py lab1_output/raw/YOUR_FILE.txt --mode guide
+```
+
+This sends your content to Claude AI, which extracts structured data and returns it as JSON. The output is saved in `lab1_output/structured/`.
+
+Want to see what the AI extracted? Look at the JSON:
+
+```bash
+cat lab1_output/structured/YOUR_FILE.curriculum.json | python -m json.tool | head -50
+```
+
+---
+
+## Step 4: Build Your Output (instant)
+
+Now turn that structured JSON into an interactive HTML page:
+
+```bash
+python scripts/build_output.py lab1_output/structured/YOUR_FILE.curriculum.json
+```
+
+The script auto-detects the mode from the filename and uses the right template.
+
+Your HTML file is in `lab1_output/final/`. To view it:
+
+```bash
+python -m http.server 8000 --directory lab1_output/final
+```
+
+Then click the port 8000 link in the Codespace ports panel (or the pop-up notification). Your interactive output opens in the browser.
+
+---
+
+## Step 5: Iterate (10-20 min)
+
+You've completed one full pipeline run. Now try variations:
+
+### Try a different mode on the same source
+
+```bash
+# Same source, different output format
+python scripts/extract_structure.py lab1_output/raw/YOUR_FILE.txt --mode briefing
+python scripts/build_output.py lab1_output/structured/YOUR_FILE.briefing.json
+```
+
+### Combine multiple sources
+
+Fetch several related articles or documents, then concatenate them before structuring:
+
+```bash
+python scripts/fetch_source.py wikipedia "Army physical fitness"
+python scripts/fetch_source.py wikipedia "Military training"
+cat lab1_output/raw/Army_physical_fitness.txt lab1_output/raw/Military_training.txt > lab1_output/raw/combined_fitness.txt
+python scripts/extract_structure.py lab1_output/raw/combined_fitness.txt --mode curriculum
+python scripts/build_output.py lab1_output/structured/combined_fitness.curriculum.json
+```
+
+### Use Claude Code to help
+
+Open Claude Code in your terminal and ask it to help you build something more complex:
+
+```bash
+claude
+```
+
+Try prompts like:
+- "Help me fetch 3 Wikipedia articles about drone operations and combine them into a training curriculum"
+- "I want to build a decision guide from this PDF — can you help me refine the output?"
+- "The quiz questions in my curriculum aren't great — can you improve them?"
+
+Claude Code can read your files, run the scripts, and iterate with you.
+
+---
+
+## Step 6: Reflect (5 min)
 
 Before you move on, think about these questions:
 
-1. **Would you actually use this output?** If it's 80% there and needs 20 minutes of cleanup — that's a win. Without AI, building a curriculum from scratch takes hours or days.
+1. **What surprised you about the AI's output?** Did it organize the information the way you would have? What would you change?
 
-2. **What did the AI get wrong?** Every AI makes mistakes — misinterpreting a video's point, inventing details, or sequencing topics oddly. What did you catch?
+2. **What did it get wrong?** AI makes mistakes — misinterpreted facts, invented details, poor sequencing. What did you catch? This is why humans stay in the loop.
 
-3. **What else could you build with this same pattern?** The fetch → structure → create pattern applies to any unstructured content:
-   - Fetch incident reports → structure into categories → create a trend analysis
-   - Fetch regulations → structure into requirements → create a compliance checklist
-   - Fetch meeting notes → structure into decisions/action items → create a status report
-   - Fetch maintenance logs → structure by system → create a readiness summary
+3. **What would you build for your actual job?** The fetch → structure → create pattern applies to any unstructured content:
+   - Fetch incident reports → structure by category → create trend analysis
+   - Fetch regulations → structure into requirements → create compliance checklist
+   - Fetch maintenance logs → structure by system → create readiness summary
+   - Fetch after-action reviews → structure into lessons learned → create training update
+   - Fetch multiple SOPs → structure decision points → create interactive field guide
 
-4. **How does this connect to what you learned in Session 0?** Everything that happened in this lab uses the same architecture from the morning session:
-   - The transcript extraction uses tokenization (breaking text into chunks)
-   - The AI's ability to understand context uses attention (weighing which words relate to which)
-   - The curriculum generation uses next-token prediction (the model predicts the most useful next word, one at a time)
-
----
-
-## Bonus: Run the Structured Extraction Script (local only)
-
-> **Note:** This only works on a local machine, not in Codespaces (YouTube blocks cloud IPs).
-
-If you finished early and want to see how the automated pipeline works on your own machine, try running the full extraction script:
-
-```bash
-# Edit videos.txt with YouTube URLs you're interested in
-# (one URL per line, max 5 videos)
-
-python scripts/youtube_extract.py videos.txt
-```
-
-This script:
-1. Fetches transcripts via the YouTube Transcript API
-2. Sends each transcript to Claude AI for structured extraction
-3. Produces two complementary knowledge formats:
-   - **JSON** — discrete facts, terminology, statistics (good for search, quizzes)
-   - **YAML** — narrative knowledge, arguments, connections (good for AI agents, conversations)
-4. Combines everything into a knowledge base with a human-readable summary
-
-Look at the output in `lab1_output/` and compare the JSON vs YAML formats. Notice how the same video content gets represented differently depending on the use case.
+4. **What's the value?** If the AI output is 80% there and needs 20 minutes of cleanup — that's a win. Without AI, building this from scratch takes hours or days. The value is in speed, not blind trust.
 
 ---
 
 ## Troubleshooting
 
-**"I don't have access to Claude or ChatGPT"**
-- Claude free tier: [claude.ai](https://claude.ai) — sign up with Google or email
-- ChatGPT free tier: [chat.openai.com](https://chat.openai.com) — sign up with Google or email
-- Both work for this lab. Use whichever you can access.
+**"ANTHROPIC_API_KEY not set"**
+```bash
+export $(grep ANTHROPIC_API_KEY .env | xargs)
+```
 
-**"The output is too short / not detailed enough"**
-- Make sure you pasted enough transcript content. 3-4 full transcripts gives the AI more to work with.
-- Add to your prompt: "Be comprehensive and detailed. Use specific examples from the transcripts."
+**"No module named 'pymupdf'" (or any module)**
+```bash
+source .venv/bin/activate
+uv sync
+```
 
-**"The AI seems to be making things up"**
-- Add to your prompt: "Only include information explicitly stated in the transcripts. If you're unsure whether something was covered, leave it out and note the gap."
-- This is called "hallucination" — it's a known limitation. Your job as the human is to catch it.
+**PDF download times out**
+Some large PDFs are slow from cloud environments. Try a smaller document, or use Wikipedia/RSS instead.
 
-**"The youtube_extract.py script isn't working"**
-- Check that your `.env` file has `ANTHROPIC_API_KEY` set
-- Make sure you've run `uv sync` to install dependencies
-- Try with just 1 video URL first to isolate the issue
+**Claude returns invalid JSON**
+This happens occasionally. Just re-run the `extract_structure.py` command — the temperature is set to 0 so results are deterministic, but network issues can truncate responses.
+
+**"I want to use Claude Code but it's not installed"**
+```bash
+sudo npm install -g @anthropic-ai/claude-code
+export $(grep ANTHROPIC_API_KEY .env | xargs)
+claude
+```
 
 **"I'm stuck or confused"**
-- Raise your hand — the proctor is here to help
-- Pair up with someone nearby and work through it together
+Raise your hand — the proctor is here to help. Or ask Claude Code: `claude "I'm stuck on step 3 of the lab, help me"`
 
 ---
 
 ## What's Next
 
-This lab established the **fetch → structure → create** pattern. In the LangGraph notebooks that follow, you'll learn to build AI agents that run this same loop *autonomously* — deciding which tool to use, when to use it, and when the task is done.
+This lab established the **fetch → structure → create** pattern. In the LangGraph notebooks that follow, you'll learn to build AI agents that run this same pipeline *autonomously* — deciding which tool to use, when to use it, and when the task is done.
 
 | This lab (manual) | Agent equivalent (automated) |
 |-------------------|------------------------------|
-| You copy transcripts | An agent fetches from an API |
-| You paste into Claude | An agent calls an LLM node |
-| You review the output | Human-in-the-loop approval |
-| You iterate with follow-ups | An agent loops until quality threshold is met |
+| You run `fetch_source.py` | An agent calls a tool to fetch data |
+| You run `extract_structure.py` | An agent calls an LLM node to reason |
+| You review the JSON | Human-in-the-loop approval step |
+| You run `build_output.py` | An agent produces final output |
+| You iterate with Claude Code | An agent loops until quality threshold met |
 
-The difference between a tool and an agent: a tool does one thing when you ask. An agent decides *what* to do, *when* to do it, and *whether it's done* — on its own.
+The difference between a tool and an agent: a tool does one thing when you tell it. An agent decides *what* to do, *when* to do it, and *whether it's done* — on its own.
+
+---
+
+## Quick Reference: All Commands
+
+```bash
+# FETCH — get raw content
+python scripts/fetch_source.py wikipedia "<topic>"
+python scripts/fetch_source.py rss "<feed_url>"
+python scripts/fetch_source.py pdf "<pdf_url>"
+python scripts/fetch_source.py file "<local_path>"
+
+# STRUCTURE — extract meaning with AI
+python scripts/extract_structure.py <raw_file> --mode curriculum
+python scripts/extract_structure.py <raw_file> --mode briefing
+python scripts/extract_structure.py <raw_file> --mode guide
+
+# CREATE — build interactive output
+python scripts/build_output.py <structured_json_file>
+
+# VIEW — open in browser
+python -m http.server 8000 --directory lab1_output/final
+
+# HELP — ask Claude Code
+claude
+```

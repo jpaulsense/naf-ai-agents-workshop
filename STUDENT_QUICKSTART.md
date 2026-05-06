@@ -9,25 +9,20 @@ Please complete these two steps before Day 1. Both are free and take about 2 min
 - Go to [github.com](https://github.com) and click **Sign up**
 - If you already have an account, you're set — just make sure you can log in
 
-### 2. Create a Claude AI account
-
-- Go to [claude.ai](https://claude.ai) and click **Sign up**
-- You can sign up with your Google account or an email address
-- Free accounts work fine for this workshop
-- If you prefer ChatGPT, that works too — go to [chat.openai.com](https://chat.openai.com)
-
-That's it. **No software to install.** Everything runs in your browser.
+That's it. **No software to install.** Everything runs in your browser via GitHub Codespaces.
 
 ---
 
-## Day 1 — Lab 1: YouTube Curriculum Builder
+## Day 1 — Lab 1: Fetch → Structure → Create
 
-This is a self-paced lab. Open `LAB-1-YOUTUBE-CURRICULUM-BUILDER.md` and follow the steps at your own pace.
+This is a self-paced lab. Open `LAB-1-YOUTUBE-CURRICULUM-BUILDER.md` in the Codespace and follow the steps at your own pace.
 
-**What you'll need open:**
-- One browser tab with [claude.ai](https://claude.ai) (or [chat.openai.com](https://chat.openai.com))
-- The `transcripts/` folder in this repository (your source material)
-- That's it
+**What you'll do:** Pick a topic you care about, fetch content from the internet (Wikipedia, news feeds, or PDFs), use AI to extract structured data, and generate an interactive HTML output — a training curriculum, intelligence briefing, or decision guide.
+
+**What you'll need:**
+- Your Codespace terminal (everything is pre-installed)
+- A topic idea (anything: cybersecurity, leadership, drones, fitness, history, cooking...)
+- Claude Code is available — type `claude` in the terminal for an AI assistant
 
 ---
 

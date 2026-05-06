@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} — Training Curriculum</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 1.8rem; color: #f8fafc; margin-bottom: 0.25rem; }
+        .subtitle { color: #94a3b8; margin-bottom: 2rem; }
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: none;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .nav-tab.active { background: #334155; color: #f8fafc; border-color: #3b82f6; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .module {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #334155;
+        }
+        .module h3 { color: #38bdf8; margin-bottom: 0.5rem; }
+        .module .objective { color: #94a3b8; font-style: italic; margin-bottom: 0.75rem; }
+        .module .topics { list-style: none; }
+        .module .topics li {
+            padding: 0.25rem 0;
+            padding-left: 1.25rem;
+            position: relative;
+            color: #cbd5e1;
+        }
+        .module .topics li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-foundational { background: #064e3b; color: #34d399; }
+        .badge-intermediate { background: #1e3a5f; color: #38bdf8; }
+        .badge-advanced { background: #4c1d95; color: #a78bfa; }
+        .term-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1rem;
+        }
+        .term-card {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #334155;
+        }
+        .term-card strong { color: #38bdf8; }
+        .term-card p { color: #94a3b8; font-size: 0.9rem; margin-top: 0.25rem; line-height: 1.5; }
+        .fact-card {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid #3b82f6;
+        }
+        .fact-card .fact { color: #f8fafc; }
+        .fact-card .context { color: #64748b; font-size: 0.85rem; margin-top: 0.25rem; }
+        .misconception {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid #dc2626;
+        }
+        .misconception .wrong { color: #fca5a5; text-decoration: line-through; }
+        .misconception .correction { color: #34d399; margin-top: 0.25rem; }
+        .quiz-item {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #334155;
+        }
+        .quiz-item h4 { color: #f8fafc; margin-bottom: 1rem; }
+        .quiz-options { list-style: none; }
+        .quiz-options li {
+            padding: 0.5rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+        }
+        .quiz-options li:hover { border-color: #3b82f6; background: #334155; }
+        .quiz-options li.correct { background: #064e3b; border-color: #059669; }
+        .quiz-options li.incorrect { background: #450a0a; border-color: #dc2626; }
+        .explanation {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: #0f172a;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            display: none;
+        }
+        .explanation.shown { display: block; }
+        .score-bar {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <p class="subtitle">{{ summary }}</p>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('modules')">Modules</button>
+            <button class="nav-tab" onclick="showTab('studyguide')">Study Guide</button>
+            <button class="nav-tab" onclick="showTab('quiz')">Knowledge Check</button>
+        </div>
+
+        <!-- Modules -->
+        <div id="tab-modules" class="section active">
+            {% for module in modules %}
+            <div class="module">
+                <span class="badge badge-{{ module.difficulty }}">{{ module.difficulty }}</span>
+                <h3>Module {{ loop.index }}: {{ module.title }}</h3>
+                <p class="objective">{{ module.learning_objective }}</p>
+                <ul class="topics">
+                    {% for topic in module.key_topics %}
+                    <li>{{ topic }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Study Guide -->
+        <div id="tab-studyguide" class="section">
+            <h2 style="color: #38bdf8; margin-bottom: 1.5rem;">Key Terminology</h2>
+            <div class="term-grid">
+                {% for term in terminology %}
+                <div class="term-card">
+                    <strong>{{ term.term }}</strong>
+                    <p>{{ term.definition }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h2 style="color: #38bdf8; margin: 2rem 0 1rem;">Key Facts</h2>
+            {% for fact in key_facts %}
+            <div class="fact-card">
+                <div class="fact">{{ fact.fact }}</div>
+                <div class="context">{{ fact.context }}</div>
+            </div>
+            {% endfor %}
+
+            <h2 style="color: #dc2626; margin: 2rem 0 1rem;">Common Misconceptions</h2>
+            {% for m in common_misconceptions %}
+            <div class="misconception">
+                <div class="wrong">{{ m.misconception }}</div>
+                <div class="correction">{{ m.correction }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Quiz -->
+        <div id="tab-quiz" class="section">
+            <div class="score-bar" id="score">Answer the questions below to test your knowledge</div>
+            {% for q in quiz_questions %}
+            <div class="quiz-item" data-correct="{{ q.correct_answer }}">
+                <h4>{{ loop.index }}. {{ q.question }}</h4>
+                {% if q.type == "multiple_choice" and q.options %}
+                <ul class="quiz-options">
+                    {% for opt in q.options %}
+                    <li onclick="checkAnswer(this, '{{ opt }}', '{{ q.correct_answer }}')">{{ opt }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="color: #94a3b8; font-style: italic;">Short answer: {{ q.correct_answer }}</p>
+                {% endif %}
+                <div class="explanation">{{ q.explanation }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+    let answered = 0, correct = 0;
+    const total = document.querySelectorAll('.quiz-item').length;
+
+    function showTab(name) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`tab-${name}`).classList.add('active');
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function checkAnswer(el, selected, correctAnswer) {
+        const item = el.closest('.quiz-item');
+        if (item.dataset.answered) return;
+        item.dataset.answered = 'true';
+        answered++;
+
+        const options = item.querySelectorAll('.quiz-options li');
+        options.forEach(opt => {
+            if (opt.textContent.trim() === correctAnswer.trim()) {
+                opt.classList.add('correct');
+            } else if (opt === el && selected.trim() !== correctAnswer.trim()) {
+                opt.classList.add('incorrect');
+            }
+        });
+
+        if (selected.trim() === correctAnswer.trim()) correct++;
+
+        item.querySelector('.explanation').classList.add('shown');
+        document.getElementById('score').textContent = `Score: ${correct}/${answered} (${total - answered} remaining)`;
+    }
+    </script>
+</body>
+</html>
