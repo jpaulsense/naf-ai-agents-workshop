@@ -20,7 +20,7 @@
     }
   },
   // Install Python deps, Claude Code, and configure API key
-  "postCreateCommand": "pip install --upgrade pip && pip install uv && uv sync; npm install -g @anthropic-ai/claude-code || true; API_KEY=\"${ANTHROPIC_API_KEY:-${USAF_ANG_LAB}}\"; if [ -n \"${API_KEY}\" ]; then echo \"ANTHROPIC_API_KEY=${API_KEY}\" > .env && echo '✅ Environment ready! Type: claude'; else cp .env.template .env && echo '⚠️  No API key found. Edit .env to add your ANTHROPIC_API_KEY'; fi",
+  "postCreateCommand": "pip install --upgrade pip && pip install uv && uv sync; npm install -g @anthropic-ai/claude-code || true; API_KEY=\"${USAF_ANG_LAB:-${ANTHROPIC_API_KEY}}\"; if [ -n \"${API_KEY}\" ]; then echo \"ANTHROPIC_API_KEY=${API_KEY}\" > .env && echo '✅ Environment ready! Type: claude'; else cp .env.template .env && echo '⚠️  No API key found. Edit .env to add your ANTHROPIC_API_KEY'; fi",
   "customizations": {
     "vscode": {
       "extensions": [
