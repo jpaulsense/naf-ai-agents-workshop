@@ -12,12 +12,15 @@
       "version": "latest",
       "ppa": true
     },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
     "ghcr.io/devcontainers/features/sshd:1": {
       "version": "latest"
     }
   },
-  // Install dependencies using uv, auto-configure API key from Codespace secret
-  "postCreateCommand": "pip install --upgrade pip && pip install uv && uv sync; playwright install chromium || true; API_KEY=\"${ANTHROPIC_API_KEY:-${USAF_ANG_LAB}}\"; if [ -n \"${API_KEY}\" ]; then echo \"ANTHROPIC_API_KEY=${API_KEY}\" > .env && echo '✅ Environment ready! API key configured.'; else cp .env.template .env && echo '⚠️  No API key found. Edit .env to add your ANTHROPIC_API_KEY'; fi",
+  // Install dependencies using uv, auto-configure API key, install Claude Code
+  "postCreateCommand": "pip install --upgrade pip && pip install uv && uv sync; playwright install chromium || true; npm install -g @anthropic-ai/claude-code || true; API_KEY=\"${ANTHROPIC_API_KEY:-${USAF_ANG_LAB}}\"; if [ -n \"${API_KEY}\" ]; then echo \"ANTHROPIC_API_KEY=${API_KEY}\" > .env && echo '✅ Environment ready! API key configured. Claude Code available — type: claude'; else cp .env.template .env && echo '⚠️  No API key found. Edit .env to add your ANTHROPIC_API_KEY'; fi",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -52,7 +55,7 @@
   },
   "remoteUser": "vscode",
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && bash scripts/setup_git_filters.sh",
-  "postAttachCommand": "echo 'source .venv/bin/activate' >> ~/.bashrc",
+  "postAttachCommand": "echo 'source .venv/bin/activate && export $(grep ANTHROPIC_API_KEY /workspaces/naf-ai-agents-workshop/.env 2>/dev/null | xargs)' >> ~/.bashrc",
   "hostRequirements": {
     "cpus": 2,
     "memory": "4gb",
