@@ -118,8 +118,18 @@ Attention figures out *which words matter to each other*. MLPs figure out *what 
 **Speaker notes:**
 
 - Four steps: up-projection (expand ~12K → ~50K), ReLU (kill negatives), down-projection (compress ~50K → ~12K), add back to original
+- Where the numbers come from:
+  - 12,288 is GPT-3's embedding dimension — the length of the vector representing each token
+  - The up-projection multiplies by a matrix that is 12,288 × 49,152 (4× the embedding dim)
+  - This 4× expansion ratio is a design choice by the Transformer authors — it gives the network room to "think" in a higher-dimensional space before compressing back
+  - Every major LLM uses roughly this 4× ratio (GPT, Claude, LLaMA)
 - Expansion is ~4x the embedding dimension
+- Why expand at all?
+  - More dimensions = more "questions" the network can ask about the input simultaneously
+  - Compression back to 12K forces the network to distill only the most important results
+  - Similar concept to a brainstorming session: generate many ideas (expand), then filter to the best (compress)
 - Up-projection = "asking questions," ReLU = "yes/no gate," down-projection = "injecting answers"
+- The residual connection (add back to original) is critical — it means the MLP only needs to add NEW information, not reconstruct everything from scratch
 
 ---
 
@@ -145,8 +155,18 @@ Think of it like a checklist with 50,000 yes/no questions. The vector walks down
 **Speaker notes:**
 
 - ~50,000 rows (4x embedding dim), each row = a direction/detector in high-dimensional space
+- What "direction in embedding space" means:
+  - Each row is a list of 12,288 numbers — the same length as a token's embedding vector
+  - During training, gradient descent shapes each row to detect a specific pattern or concept
+  - Nobody programs what each row detects — the network discovers useful patterns on its own
+  - Some rows end up detecting simple things ("is this a noun?"), others detect complex combinations ("is this a person's name followed by a profession?")
 - Dot product = "how much does input align with this direction?" — positive = yes, negative = no
+  - Dot product is just: multiply corresponding numbers, add them up — one final score
+  - High positive score = strong alignment (the input matches what this row is looking for)
+  - Near zero = no relationship; negative = opposite of what the row detects
 - All 50,000 questions asked simultaneously (massively parallel, why GPUs matter)
+  - This is matrix multiplication — one operation on a GPU computes all 50,000 dot products at once
+  - This is why AI requires GPUs, not CPUs — GPUs are designed for exactly this kind of parallel math
 - Output: column of ~50,000 scores — still need bias + ReLU before it means anything
 
 ---
@@ -177,8 +197,14 @@ The combination of directional weights + bias creates a logical AND gate: the ne
 
 - One row encodes two directions: Michael + Jordan; dot product measures alignment with each
 - Bias of -1 = threshold requiring both: "Michael Jordan" → 2-1=1 (fires); just "Michael" → 1-1=0 (doesn't)
+  - Bias is a single number added after the dot product — acts as a threshold or sensitivity dial
+  - Negative bias = harder to activate (needs stronger match); positive bias = easier to activate
+  - Bias values are learned during training just like weights — the network figures out the right thresholds
 - Functionally an AND gate — built from matrix multiply + bias, learned during training, not programmed
-- Simple linear algebra creates logical operations
+  - AND, OR, NOT gates can all be constructed from dot products + biases
+  - AND = high threshold (bias = -1, needs both); OR = low threshold (bias = 0, needs either)
+  - The network learns whichever logic it needs — not limited to simple patterns
+- Simple linear algebra creates logical operations — this is how arithmetic produces what looks like reasoning
 
 ---
 
@@ -201,9 +227,15 @@ The combination of directional weights + bias creates a logical AND gate: the ne
 **Speaker notes:**
 
 - ReLU: negative → zero, positive → unchanged; simplest useful function in AI
+  - Full name: Rectified Linear Unit — "rectified" means it clips the negative part, "linear" because positive values pass through unchanged
+  - Older networks used sigmoid or tanh (S-shaped curves) — ReLU is simpler and trains faster
+  - One of those cases where the simplest approach turned out to work best
 - Positive score = neuron "active" (feature detected); zero/negative = "inactive" (contributes nothing)
 - With bias trick: "Michael Jordan" → ~1 → passes ReLU → ACTIVE; just "Michael" → ~0 → clipped → INACTIVE
 - After ReLU: most of ~50,000 values are zero; only the few active neurons proceed to next step
+  - Typically 90-99% of neurons are inactive for any given input — the network is very selective
+  - This sparsity is important: only a tiny fraction of the network's knowledge is relevant to any particular word
+  - Like a library: millions of books, but only a few are open for any given question
 
 ---
 
@@ -229,8 +261,15 @@ Think of a filing cabinet with 50,000 folders. Each folder contains knowledge ab
 **Speaker notes:**
 
 - Down-projection: ~50,000 columns, each column = a direction in embedding space encoding what knowledge to add
+  - The down-projection matrix is 49,152 × 12,288 — it compresses back to the original vector size
+  - Each of the 49,152 columns is a 12,288-dimensional vector — the same shape as a token embedding
+  - This means each column literally IS a direction in the same space as word meanings
 - "Michael Jordan" neuron's column points in "basketball" direction — active → column added; inactive → zero contribution
+  - "Points in the basketball direction" = the column's values, when added to the embedding, nudge it toward the part of the space where basketball-related words live
+  - The activation value scales the column — a strongly active neuron adds more of that knowledge than a weakly active one
 - One column can encode multiple associated facts: basketball + Chicago Bulls + #23 + slam dunk
+  - A single column is a 12,288-dimensional vector — rich enough to encode many associated directions at once
+  - This is why the model can "know" many things about one concept — the column carries a bundle of associations
 - Filing cabinet analogy: up-projection + ReLU = which folders to open; down-projection = the knowledge inside
 
 ---
@@ -286,9 +325,17 @@ The entire process is just matrix multiplication, subtraction, and zeroing out n
 **Speaker notes:**
 
 - Each MLP block ≈ 1.2B params; 96 layers × 1.2B = ~116B params = two-thirds of GPT-3
+  - Per-block math: up-projection matrix (12,288 × 49,152 = 603M) + down-projection matrix (49,152 × 12,288 = 603M) + biases ≈ 1.2B parameters
+  - These are literally the numbers that encode every fact the model knows
 - Attention gets the headlines but is only ~58B (one-third); MLPs are the quiet majority
+  - Attention is what people talk about ("the attention mechanism!") but most of the model by weight is MLP
+  - Attention decides which words are relevant to each other; MLPs store and inject the actual knowledge
 - 116B numbers tuned by gradient descent on ~300B tokens of text
+  - Each of those 116B parameters started as a random number and was nudged trillions of times during training
+  - The training process decided what facts to store and where — no human chose which MLP neuron stores which fact
 - Larger models know more facts: more MLP params = more knowledge storage capacity
+  - This is a key reason why scaling up model size works — more MLP neurons = more "slots" for facts
+  - Also why models sometimes get facts wrong — there are billions of facts in the training data competing for limited storage
 
 ---
 
@@ -315,10 +362,21 @@ This is why bigger models are dramatically more capable — not just proportiona
 **Speaker notes:**
 
 - NOT one neuron = one concept; reality is superposition — features overlap, neurons participate in many concepts
+  - Early AI researchers assumed each neuron would represent one thing (the "grandmother cell" hypothesis)
+  - Reality: the concept of "basketball" is spread across hundreds of neurons, and each of those neurons also participates in encoding "sports," "round objects," "competition," etc.
 - Like radio stations on overlapping frequencies — any single neuron encodes many things
+  - FM radio separates stations with distinct frequencies; the brain/LLMs don't have that luxury
+  - Instead, concepts are encoded as patterns ACROSS neurons — no single neuron is interpretable alone
 - High-dimensional geometry: 2D → 2 perpendicular directions; 12,288D → rules change dramatically
+  - In 2D (a flat piece of paper), you can only draw 2 perpendicular arrows (up and right)
+  - In 3D, you get 3 (up, right, forward)
+  - But in 12,288D, you don't just get 12,288 — you get an astronomically larger number of NEARLY perpendicular directions
+  - "Nearly perpendicular" = close enough that the interference between concepts is negligible
 - Johnson-Lindenstrauss: 100 dimensions can hold 10,000+ nearly-perpendicular vectors; growth is exponential
+  - This is a proven mathematical theorem, not a guess — it's why high-dimensional AI works at all
+  - Practically: GPT-3's 12,288 dimensions can hold millions of distinguishable concepts despite only having 12,288 neurons per layer
 - Grant's quote: "10x dimensions = way more than 10x independent ideas" — why scaling works so disproportionately well
+  - This is the mathematical justification for why bigger models are disproportionately smarter, not just proportionally
 
 ---
 
@@ -339,9 +397,16 @@ This is why bigger models are dramatically more capable — not just proportiona
 **Speaker notes:**
 
 - Field = mechanistic interpretability — reverse-engineering what's inside neural networks
+  - Goal: understand what the model learned, not just that it works — like opening the hood of a car vs. just driving it
+  - Important for safety: if we can't understand what the model learned, we can't predict when it will fail
 - Sparse autoencoders (Anthropic et al.): decompose superimposed neuron activations into individual interpretable features
+  - "Sparse" = most features are inactive for any given input (like the 90-99% inactive neurons from earlier)
+  - The autoencoder learns to expand the neuron activations into a much larger space where individual concepts become separable
+  - Anthropic found features for things like "code in Python," "text about Golden Gate Bridge," "deceptive statements" — real, interpretable concepts
 - Analogy: multiple people talking → microphone picks up jumble → software separates individual voices
 - Cutting-edge research, not fully solved yet — but critical for trust and safety
+  - If we can identify which features encode harmful knowledge, we might be able to surgically remove them
+  - Also useful for understanding why models hallucinate — which facts are stored weakly vs. strongly
 
 ---
 

@@ -73,9 +73,16 @@ The LLM doesn't retrieve answers from a database. It *generates* them by repeate
 **Speaker notes:**
 
 - LLM is a mathematical function: text (as token IDs) in, probability distribution over ~50,000 possible next tokens out
+  - "Token" ≠ word — tokens are subword chunks; "basketball" might be one token, "unbelievable" might be split into "un" + "believable"
+  - ~50,000 tokens in the vocabulary covers all common English words plus fragments, punctuation, numbers, code symbols
 - Scores entire vocabulary — "Paris" 68%, "a" 4%, "the" 3% — then samples from distribution with some randomness
+  - "Temperature" controls the randomness: low temp = almost always picks the highest probability (predictable); high temp = more random/creative
+  - This is why asking the same question twice can give different answers — the sampling has randomness built in
 - Appends chosen word, reruns the function — generates paragraphs one token at a time (autoregressive)
+  - "Autoregressive" = each prediction becomes input for the next; the model reads its own output as it writes
+  - A 500-word response means the model ran the full computation ~500 times, once per token
 - Does not look up answers in a database — everything comes from patterns encoded in parameters during training
+  - This is why it can sound confident about wrong information — it's generating plausible text, not retrieving verified facts
 
 ---
 
@@ -129,8 +136,16 @@ Think of a massive mixing board in a recording studio — thousands of sliders a
 **Speaker notes:**
 
 - All "intelligence" lives in parameters: attention weights, MLP weights, biases, embedding values
+  - Attention weights: decide which words are relevant to each other (context)
+  - MLP weights: store factual knowledge and learned patterns (as covered in Chapter 8)
+  - Biases: thresholds that control when neurons activate
+  - Embedding values: the initial mapping from words to vectors (as covered in Chapter 9)
 - GPT-3 = 175 billion parameters — roughly one per star in the Milky Way; GPT-4 and Claude are larger (exact counts not public)
+  - These parameters are stored as numbers, typically 16-bit floating point — GPT-3 is about 350 GB of raw numbers
+  - Model file sizes you see (like a 7B model being ~14 GB) are literally just the parameter values saved to disk
 - Random parameters = pure gibberish; the magic is entirely in how training sets those values
+  - Every model starts as random noise — untrained GPT-3 is 175 billion random numbers that produce nonsense
+  - Training transforms random noise into structured knowledge — the single most expensive step
 
 ---
 
@@ -158,9 +173,19 @@ Think of a massive mixing board in a recording studio — thousands of sliders a
 **Speaker notes:**
 
 - Same gradient descent / backpropagation from earlier chapters, just at enormous scale
+  - The math is identical to the simple digit-recognition network from Chapter 1 — just scaled by a factor of millions
+  - Each training step: forward pass (predict), compute loss (how wrong), backward pass (compute gradients), update (nudge parameters)
 - Cost function = "how surprised was the model by the actual next word?" — high confidence + wrong answer = big adjustment
+  - Technical name: cross-entropy loss — measures the gap between predicted probabilities and reality
+  - If the model says "Paris" has 2% chance but the answer IS "Paris" → big penalty, big update
+  - If the model says "Paris" has 95% chance and the answer IS "Paris" → small penalty, tiny update
 - Training data: books, Wikipedia, code, papers, forums, news — GPT-3 trained on ~300 billion tokens
+  - That's roughly the equivalent of reading every book in the Library of Congress — 10 times over
+  - Quality and diversity of training data matters as much as quantity — garbage in, garbage out still applies
 - Progression: character patterns → grammar → facts → nuance/reasoning — billions of tiny nudges compound
+  - Early training: learns that "q" is almost always followed by "u"
+  - Mid training: learns sentence structure and grammar rules
+  - Late training: learns factual knowledge, reasoning patterns, and style — the "smart" behaviors
 
 ---
 
@@ -185,8 +210,16 @@ The training is the expensive part — it happens once. After that, the model is
 **Speaker notes:**
 
 - At 1 billion ops/sec, training GPT-3 would take 100+ million years — longer than since dinosaurs went extinct
+  - Grant's point: this number makes it tangible how much computation is required — it's not something you can do on a laptop
+  - The actual number of operations: roughly 3.14 × 10²³ floating-point operations (314 followed by 21 zeros)
 - Solution: thousands of GPUs/TPUs in parallel, training runs last weeks-to-months; GPT-3 cost $4-12M, GPT-4 ~$100M+
+  - A single NVIDIA H100 GPU can do ~2 quadrillion operations per second — but you still need thousands of them
+  - Training clusters: 10,000+ GPUs connected by high-speed networks, running 24/7 for weeks
+  - Electricity cost alone is substantial — a large training run uses as much power as a small town
 - Training (expensive, one-time, months) vs. inference (cheap, milliseconds per query, parameters frozen)
+  - When you use ChatGPT or Claude, the model parameters don't change — they're frozen after training
+  - Your query doesn't make the model smarter or teach it anything — it's read-only
+  - Inference (using the model) costs roughly $0.25-$15 per million tokens depending on the model — tiny compared to training
 
 ---
 
@@ -210,10 +243,18 @@ Pre-training is like going to school — you absorb a massive amount of general 
 **Speaker notes:**
 
 - Phase 1 (pre-training): predict next word on billions of examples — produces a text predictor, not a helpful assistant
+  - A raw pre-trained model doesn't answer questions — it continues text; ask it "What is 2+2?" and it might continue with "What is 3+3? What is 4+4?" because that pattern matches its training data
 - Raw pre-trained model mirrors the internet (brilliant and terrible) — might answer a question with another question or produce toxic text
+  - The internet contains helpful tutorials AND trolling AND misinformation — pre-training absorbs all of it indiscriminately
 - Phase 2 (RLHF): humans rate response pairs, parameters nudge toward preferred answers — turns predictor into helpful assistant
+  - Process: show the model a question, generate two responses, a human picks the better one
+  - This creates a "reward model" that learns what humans prefer
+  - The reward model then guides further training — the LLM's parameters get nudged toward producing responses the reward model scores highly
+  - Thousands of human raters doing this across millions of examples
 - Pre-training = knowledge and language ability; RLHF = manners and helpfulness
 - RLHF uses far less compute than pre-training but has outsized effect on behavior
+  - Pre-training might take months and $100M; RLHF adds days/weeks and a fraction of the cost
+  - But RLHF is what makes the difference between a raw text predictor and a useful assistant — the highest-leverage investment
 
 ---
 
@@ -265,11 +306,19 @@ The behavior of an LLM is *emergent* — it arises from the interaction of billi
 **Speaker notes:**
 
 - Nobody programmed "translate French" or "write a sonnet" — all emerged from one objective: predict the next word
+  - To predict the next word of a French-to-English translation example, the model HAD to learn translation — it wasn't a goal, it was a byproduct
+  - Same for math, code, logic puzzles, poetry — if it appeared in training data, predicting the next token required learning the skill
 - Parameters set by gradient descent, not humans — no one decided what weight #47B should be; complex behaviors emerged as a byproduct
+  - This is fundamentally different from traditional software where a programmer writes each rule
+  - Consequence: we can test what the model does, but we can't fully explain WHY it does it
 - Interpretability challenge: can't point to "the part that knows French" — knowledge distributed across billions of parameters
+  - This is the superposition problem from Chapter 8 — concepts overlap across neurons
+  - Active research (Anthropic's sparse autoencoders, etc.) is making progress but it's not solved
 - LLMs are powerful but not fully predictable — they produce impressive results AND confident-sounding mistakes
+  - "Hallucination" = the model generates fluent, confident text about something that isn't true
+  - It happens because the model is optimizing for "plausible next word" not "true next word"
+  - This is why human review matters — the pattern from our lab: AI does 90%, human verifies the 10%
 - No beliefs, intentions, or understanding — just patterns; understanding this helps you know when to trust vs. verify
-- Workshop connection: LLM provides language ability, we add tools/workflows/guardrails around it for reliability
 
 ---
 
