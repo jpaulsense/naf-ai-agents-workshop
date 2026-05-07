@@ -49,7 +49,7 @@
   },
   "remoteUser": "vscode",
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
-  "postAttachCommand": "echo 'source .venv/bin/activate && export $(grep ANTHROPIC_API_KEY /workspaces/naf-ai-agents-workshop/.env 2>/dev/null | xargs)' >> ~/.bashrc",
+  "postAttachCommand": "echo 'source .venv/bin/activate && export $(grep ANTHROPIC_API_KEY /workspaces/naf-ai-agents-workshop/.env 2>/dev/null | xargs)' >> ~/.zshrc && source ~/.zshrc",
   "hostRequirements": {
     "cpus": 2,
     "memory": "4gb",
